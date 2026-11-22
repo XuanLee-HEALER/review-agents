@@ -1,0 +1,203 @@
+[
+  {
+    "case": "quality-stale-guide",
+    "role": "quality",
+    "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+    "head": "38d72cf761b235e41dc1a285e8eae666619c55a0",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "findings",
+    "summary": "发现 1 项阻塞问题：`POST /notifications` 不再接受集成指南中仍然标为有效的请求。",
+    "findings": [
+      {
+        "severity": "blocking",
+        "path": "src/notifications.js",
+        "line": 14,
+        "title": "请求格式变更导致文档示例返回 400",
+        "evidence": "`docs/notifications.md` 仍示例使用 `{\"channel\":\"email\"}`，并说明成功时返回 201。基线实现接受该请求；新实现只读取 `delivery.channel`，因此同一请求现在返回 400 和 `invalid_channel`。新增测试也明确断言了这一拒绝行为。",
+        "recommendation": "如果需要兼容现有调用方，继续接受顶层 `channel`，并保留文档示例返回 201 的回归测试。如果有意停止兼容，则在同一变更中更新集成指南的请求示例，并说明旧格式不再受支持。"
+      }
+    ],
+    "checked": [
+      "完整阅读了两个变更文件的差异，并核对了基线与目标版本的处理逻辑和测试。",
+      "检查了 README 链接的集成指南，对照了文档示例在变更前后的处理结果。"
+    ],
+    "limitations": [
+      "仅进行了静态审查，未运行 Bun 测试。",
+      "仓库内容未说明是否计划停止兼容旧请求格式，也无法确认仓库外调用方的迁移状态。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 4,
+    "compactions": 0,
+    "totalTokens": 12539,
+    "coverage": {
+      "changedFiles": 2,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:src/notifications.js",
+        "base:src/notifications.js",
+        "head:tests/notifications.test.js",
+        "head:docs/notifications.md",
+        "head:README.md",
+        "base:docs/notifications.md",
+        "base:tests/notifications.test.js"
+      ],
+      "searches": 2,
+      "toolCalls": 11,
+      "toolErrors": []
+    }
+  },
+  {
+    "case": "quality-updated-guide",
+    "role": "quality",
+    "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+    "head": "18743033c06a7f036124c45d54c0edd8b3a99fcb",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "pass",
+    "summary": "未发现此次变更引入的具体实现质量问题。处理器、文档和测试一致改用 `delivery.channel`；仅包含旧版顶层 `channel` 的请求现在会返回 `400 invalid_channel`，成功响应结构不变。",
+    "findings": [],
+    "checked": [
+      "审阅了全部三个变更文件的完整 diff，并对照基线核查了请求字段、校验和响应行为。",
+      "核对了 README、接口文档和仓库内调用点；新增测试明确覆盖旧请求格式被拒绝的行为。",
+      "确认路由判断及无效 JSON 的错误处理未改动。"
+    ],
+    "limitations": [
+      "仅进行了静态审阅，未运行 Bun 测试。",
+      "无法从仓库判断是否仍有外部调用方使用旧请求格式。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 4,
+    "compactions": 0,
+    "totalTokens": 13476,
+    "coverage": {
+      "changedFiles": 3,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:README.md",
+        "head:src/notifications.js",
+        "head:docs/notifications.md",
+        "head:tests/notifications.test.js",
+        "base:docs/notifications.md",
+        "base:src/notifications.js",
+        "base:tests/notifications.test.js"
+      ],
+      "searches": 2,
+      "toolCalls": 12,
+      "toolErrors": []
+    }
+  },
+  {
+    "case": "comments-wellness",
+    "role": "comments",
+    "base": "80a6ace5ce2cf83655f41507a7c59e423809c9cc",
+    "head": "ef80c60bd0c2a2de1266ab5b556ecea9bf5c002a",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace",
+      "web"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "findings",
+    "summary": "多账号摄取的实现已改用健康账号邮箱集合，但缓存注释夸大了查询保证，发送者检查没有说明输入前提，MCP 工具文档和现行规范仍描述旧行为。新增测试的说明也超出了断言实际覆盖的范围。",
+    "findings": [
+      {
+        "severity": "blocking",
+        "path": "roster/health/tools/wellness_ingest.py",
+        "line": 271,
+        "title": "缓存按进程共享，不保证每会话只查询一次",
+        "evidence": "第 279–290 行在等待注册表查询前检查模块全局变量，等待结束后才赋值，没有并发保护。因此多个并发冷启动调用可以各自查询。查询异常也会写入空集合，后续调用不会重试，并在第 332–340 行拒绝摄取。第 973–974 行的测试只覆盖同一进程中的两次串行调用。",
+        "recommendation": "将缓存说明统一改为：首次使用时加载进程级快照，后续调用复用该快照，不随请求会话结束而清除；并发初始化可能发起多次查询；没有合格账号或查询失败都可能留下空快照，后续摄取会被拒绝且不会自动重查。移除未经证实的“符合规范”断言。"
+      },
+      {
+        "severity": "blocking",
+        "path": "roster/health/tools/wellness_ingest.py",
+        "line": 327,
+        "title": "明确发送者检查依赖已校验的摄取信封",
+        "evidence": "第 330–342 行只对非空的 `sender.identity` 做邮箱集合成员检查；集合非空时，缺失或为空的身份不会触发该分支。Switchboard 的 `IngestSenderV1` 要求非空身份，但 `roster/health/modules/tools.py:340–356` 接收并直接转发普通字典，不重新校验信封。注册表按账号状态和 scopes 筛选；写入用的 owner 实体则在第 356 行另行解析，并不是对每个发送账号单独验证实体归属。",
+        "recommendation": "在 `envelope` 参数说明中写明：传入由 Switchboard 校验并路由的 `wellness/google_health` `ingest.v1` 信封，`sender.identity` 应为连接器填入的非空账号邮箱。本函数将该邮箱与缓存集合精确匹配，不重新校验完整信封或认证来源。删去内部注释中暗示此处会另行验证账号实体归属的表述。"
+      },
+      {
+        "severity": "blocking",
+        "path": "roster/health/tools/wellness_ingest.py",
+        "line": 321,
+        "title": "同步 MCP 工具公开的状态值和成功返回形状",
+        "evidence": "`roster/health/modules/tools.py:347–355` 的工具文档仍列出 `rejected_non_primary_sender`，并称成功时返回顶层 `fact_id` 和 `predicate`，但包装器直接返回转换器的结果。转换器实际返回 `rejected_non_owner_sender`，并使用同名 Prometheus `outcome`；成功结果始终有 `facts_written` 和 `facts`，只有结果列表恰有一条时才附带顶层兼容字段（第 482–489 行）。",
+        "recommendation": "在 MCP 工具的源 docstring 中替换旧状态值，并写明 `ok` 时返回 `facts_written` 和 `facts`，仅当 `facts` 恰有一项时附带顶层 `fact_id` 和 `predicate`。同时在转换器模块头部区分逐事实的成功计数与逐信封的发送者拒绝计数，注明拒绝标签为 `predicate=\"unknown\", outcome=\"rejected_non_owner_sender\"`。"
+      },
+      {
+        "severity": "blocking",
+        "path": "roster/health/tools/wellness_ingest.py",
+        "line": 325,
+        "title": "多账号接受规则与现行主账号规范冲突",
+        "evidence": "`openspec/specs/butler-health/spec.md:231–241` 仍要求拒绝非主账号，并另行规定 scope 撤销时应保存已在途的信封；`openspec/specs/connector-google-health/spec.md:32–36` 仍写着只轮询主账号。当前连接器会发现多个合格账号（`src/butlers/connectors/google_health.py:947–1014`），本 diff 则接受缓存中的任一邮箱。如果 scope 已在首次查询前移除，在途信封也可能被拒绝；已加载的快照则不会因后续撤销更新。",
+        "recommendation": "明确本次变更是否替代主账号限制；若替代，同步两处现行规范，写清合格账号的定义，并明确撤销发生在快照加载前或加载后时如何对待已在途信封。不要用代码注释替代这项规范确认。"
+      },
+      {
+        "severity": "suggestion",
+        "path": "roster/health/tests/test_wellness_ingest.py",
+        "line": 867,
+        "title": "测试说明应区分模拟输入与实际断言",
+        "evidence": "第 283–290 行直接模拟注册表返回的邮箱集合，因此新用例验证的是摄取端如何处理集合中有或没有某个邮箱，并不执行 scope 或撤销状态筛选。第 883 行还称结果携带 owner `entity_id`，但第 897–899 行只检查写入 mock 收到了非空 `entity_id`，既不检查响应字段，也不比较其是否等于模拟解析出的 owner ID。",
+        "recommendation": "将类和用例说明收窄为“基于模拟注册表结果的摄取单元测试”，把 scope 不足或撤销写成模拟集合排除邮箱的原因，而非此处验证的行为。将接受用例改述为“断言存储调用收到非空 `entity_id`”；若要声明验证了 owner 归属，再用固定的模拟 owner ID 做相等断言。可顺手合并文件顶部重复的 owner 校验覆盖条目。"
+      }
+    ],
+    "checked": [
+      "已读完两个变更文件的全部 diff 页，并按固定 head 的源文件行号定位。",
+      "核对了账号注册表筛选、连接器邮箱来源、Switchboard 信封与路由声明、Health MCP 包装器、写入和返回分支，以及相关测试与现行规范。"
+    ],
+    "limitations": [
+      "仅做静态审阅；未运行测试，也未验证部署中的 MCP 工具描述或生成产物。",
+      "仓库中未找到支持新注释所引“每 butler-session 查询一次”的规范条文；未核实仓库外工单或业务决策。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 13,
+    "compactions": 0,
+    "totalTokens": 538401,
+    "coverage": {
+      "changedFiles": 2,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:roster/health/tools/wellness_ingest.py",
+        "head:src/butlers/google_account_registry.py",
+        "head:roster/health/modules/tools.py",
+        "head:roster/health/tests/test_wellness_ingest.py",
+        "head:openspec/specs/butler-health/spec.md",
+        "head:openspec/specs/butler-switchboard/spec.md",
+        "head:openspec/specs/connector-google-health/spec.md",
+        "head:src/butlers/connectors/google_health.py",
+        "head:src/butlers/modules/pipeline.py",
+        "head:roster/health/modules/__init__.py",
+        "head:roster/switchboard/tools/routing/contracts.py",
+        "head:src/butlers/connectors/metrics.py",
+        "head:src/butlers/core_tools/_routing.py",
+        "head:tests/connectors/test_google_health_connector.py",
+        "head:openspec/changes/archive/2026-04-25-wellness-ingest-option-b-eval/proposal.md"
+      ],
+      "searches": 36,
+      "toolCalls": 64,
+      "toolErrors": []
+    }
+  }
+]

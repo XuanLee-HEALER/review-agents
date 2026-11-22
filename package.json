@@ -1,0 +1,22 @@
+{
+  "name": "review-agents",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "bun build --target=bun --packages=external --outdir=dist src/quality.ts src/performance.ts src/simplify.ts src/comments.ts",
+    "quality": "bun src/quality.ts",
+    "performance": "bun src/performance.ts",
+    "check": "tsc --noEmit",
+    "test": "bun test",
+    "test:integration": "bun test tests/integration.test.ts",
+    "test:database": "bun scripts/validate-database.ts"
+  },
+  "dependencies": {
+    "openai": "7.51.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "~6.0.0"
+  }
+}

@@ -1,0 +1,433 @@
+{
+  "version": 1,
+  "source": "https://github.com/review-bench/ReviewBench",
+  "source_revision": "f223ce33558a6d211fd222b1f7ff2fd7b44403d4",
+  "source_license": "MIT; reviewed repositories retain their own licenses",
+  "status": "frozen_baseline_v1",
+  "reviewer_input": [
+    "isolated repository",
+    "base",
+    "head"
+  ],
+  "withhold_from_reviewer": [
+    "PR title/body",
+    "human comments",
+    "golden findings",
+    "selection reasons",
+    "role mappings",
+    "scores"
+  ],
+  "cases": [
+    {
+      "nwo": "AA-Factory/aafactory-prototype",
+      "pr_number": 17,
+      "base": "e7f558c7360abac335af2df22f4ed376992b30ab",
+      "head": "a1978cb75950a879df8805e4a5f373eb6678f6f9",
+      "language": "Python",
+      "files_changed": 1,
+      "lines_added": 45,
+      "lines_removed": 0,
+      "mirror": "https://github.com/review-bench/AA-Factory_aafactory-prototype.git",
+      "pr_url": "https://github.com/AA-Factory/aafactory-prototype/pull/17",
+      "golden_file": "golden/AA-Factory_aafactory-prototype_17-a1978cb7.json",
+      "candidate_reference_indices": {
+        "quality": [
+          0
+        ]
+      },
+      "selection_reason": "测试依赖与可复现性",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "mirror_commits_verified": true,
+      "preliminary_evidence": "New test uses mocker and pytest.mark.asyncio; root pyproject.toml lists pytest/pytest-cov but not their supplying plugins. No dependency installation or runtime execution performed.",
+      "split": "development",
+      "references": [
+        {
+          "role": "quality",
+          "id": "missing-pytest-plugins",
+          "upstream_indices": [
+            0
+          ],
+          "evidence": [
+            "pyproject.toml",
+            "aafactory/src/tests/test_chat/test_mock_chat.py"
+          ],
+          "criterion": "New test requires mocker and asyncio execution; declared dev deps lack supplying pytest plugins. Lock extra declarations alone do not install them."
+        }
+      ]
+    },
+    {
+      "nwo": "Imageomics/catalog",
+      "pr_number": 75,
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "language": "JavaScript",
+      "files_changed": 4,
+      "lines_added": 92,
+      "lines_removed": 3,
+      "mirror": "https://github.com/review-bench/Imageomics_catalog.git",
+      "pr_url": "https://github.com/Imageomics/catalog/pull/75",
+      "golden_file": "golden/Imageomics_catalog_75-a8a7cdc7.json",
+      "candidate_reference_indices": {
+        "performance": [
+          2,
+          3
+        ],
+        "quality": [
+          4
+        ],
+        "comments": [
+          20
+        ]
+      },
+      "selection_reason": "重复网络请求、错误可见性、配置注释",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "mirror_commits_verified": true,
+      "preliminary_evidence": "Head source contains the additional-model fetch and subsequent unconditional model-detail fetch; export script header omits the new config key.",
+      "split": "development",
+      "references": [
+        {
+          "role": "performance",
+          "id": "duplicate-model-fetch",
+          "upstream_indices": [
+            2,
+            3
+          ],
+          "evidence": [
+            "main.js:299-345",
+            "scripts/export-tags.js:122-150"
+          ],
+          "criterion": "Additional models fetched with full metadata and fetched again by existing detail loop. Two locations count as one cause."
+        },
+        {
+          "role": "quality",
+          "id": "silent-extra-repo-errors",
+          "upstream_indices": [
+            4
+          ],
+          "evidence": [
+            "scripts/export-tags.js:133-140"
+          ],
+          "criterion": "New catch returns null silently, unlike main.js; useful diagnostics recommendation, not assertion about business completeness."
+        },
+        {
+          "role": "comments",
+          "id": "missing-config-key-comment",
+          "upstream_indices": [
+            20
+          ],
+          "evidence": [
+            "scripts/export-tags.js:11-12",
+            "scripts/export-tags.js:122"
+          ],
+          "criterion": "Header enumerates config keys but omits newly read ADDITIONAL_HF_REPOS."
+        }
+      ]
+    },
+    {
+      "nwo": "SiaFoundation/indexd",
+      "pr_number": 939,
+      "base": "34903936328bedda64ba8ba4acbe0fa58d94ae4c",
+      "head": "933dc46dd64f5f927e1cc41fa845544dcbd749b1",
+      "language": "Go",
+      "files_changed": 3,
+      "lines_added": 126,
+      "lines_removed": 1,
+      "mirror": "https://github.com/review-bench/SiaFoundation_indexd.git",
+      "pr_url": "https://github.com/SiaFoundation/indexd/pull/939",
+      "golden_file": "golden/SiaFoundation_indexd_939-933dc46d.json",
+      "candidate_reference_indices": {
+        "quality": [
+          1
+        ]
+      },
+      "selection_reason": "流式响应失败处理；需要核对调用方",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "development",
+      "references": [],
+      "exclusion": "Reference is conditional: encoder can error on unsupported label types, but reachability from actual metric producers has not been established. Do not treat absent warning as a miss; assess emitted suggestions independently."
+    },
+    {
+      "nwo": "Tzeusy/butlers",
+      "pr_number": 1021,
+      "base": "b57517a5f8daf3b4e776884589ffedb35018b5d4",
+      "head": "403e15fe7702ac03ac466dedd11e49f9d6ce7d66",
+      "language": "Python",
+      "files_changed": 7,
+      "lines_added": 278,
+      "lines_removed": 13,
+      "mirror": "https://github.com/review-bench/Tzeusy_butlers.git",
+      "pr_url": "https://github.com/Tzeusy/butlers/pull/1021",
+      "golden_file": "golden/Tzeusy_butlers_1021-403e15fe.json",
+      "candidate_reference_indices": {
+        "simplify": [
+          0,
+          15,
+          16,
+          17,
+          18,
+          19
+        ],
+        "quality": [
+          0
+        ]
+      },
+      "selection_reason": "重复测试夹具；同根因只计一次",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "holdout",
+      "references": [
+        {
+          "role": "quality",
+          "id": "duplicated-runtime-fixtures",
+          "upstream_indices": [
+            0
+          ],
+          "evidence": [
+            "tests/daemon/test_daemon.py",
+            "tests/daemon/test_graceful_shutdown.py",
+            "tests/daemon/test_liveness_reporter.py"
+          ],
+          "criterion": "Repeated same runtime config row and async side-effect helper across six changed test files; one maintainability cause."
+        },
+        {
+          "role": "simplify",
+          "id": "duplicated-runtime-fixtures",
+          "upstream_indices": [
+            0,
+            15,
+            16,
+            17,
+            18,
+            19
+          ],
+          "evidence": [
+            "tests/daemon/test_daemon.py",
+            "tests/daemon/test_notify_contact_id.py"
+          ],
+          "criterion": "Factor identical helpers while preserving call signatures and return behavior; count once."
+        }
+      ]
+    },
+    {
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "pr_number": 2,
+      "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+      "head": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+      "language": "TypeScript",
+      "files_changed": 1,
+      "lines_added": 92,
+      "lines_removed": 40,
+      "mirror": "https://github.com/review-bench/UniverseCitiz3n_msgraph-kb-mcp.git",
+      "pr_url": "https://github.com/UniverseCitiz3n/msgraph-kb-mcp/pull/2",
+      "golden_file": "golden/UniverseCitiz3n_msgraph-kb-mcp_2-3e0bfe72.json",
+      "candidate_reference_indices": {
+        "comments": [
+          5
+        ]
+      },
+      "selection_reason": "恢复说明与实际初始化路径不符",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "holdout",
+      "references": [
+        {
+          "role": "comments",
+          "id": "false-auto-recovery",
+          "upstream_indices": [
+            5
+          ],
+          "evidence": [
+            "README.md:134",
+            "src/index.ts:19",
+            "src/loader.ts:192-254"
+          ],
+          "criterion": "README promises errors until data available; loadIndex runs once before serving and no retry path is present. Require restart wording, not auto-retry feature implementation."
+        }
+      ]
+    },
+    {
+      "nwo": "rulecom/rule-io-sdk",
+      "pr_number": 36,
+      "base": "63089a6f9c49127afd22da65e366977ed24a1419",
+      "head": "778a137bbaa1aa3ecc25970da48655620bab8632",
+      "language": "TypeScript",
+      "files_changed": 5,
+      "lines_added": 264,
+      "lines_removed": 0,
+      "mirror": "https://github.com/review-bench/rulecom_rule-io-sdk.git",
+      "pr_url": "https://github.com/rulecom/rule-io-sdk/pull/36",
+      "golden_file": "golden/rulecom_rule-io-sdk_36-778a137b.json",
+      "candidate_reference_indices": {
+        "simplify": [
+          1,
+          4
+        ]
+      },
+      "selection_reason": "争议校准：不要将未来扩展假设直接当作必提建议",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "development",
+      "references": [],
+      "exclusion": "Both references excluded from required recall: explicit query fields valid today; subscriber interface intentionally separate with documented endpoint differences. Concrete simpler equivalents may be optional, speculative future breakage is not an established defect."
+    },
+    {
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "pr_number": 76,
+      "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+      "head": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+      "language": "Go",
+      "files_changed": 4,
+      "lines_added": 71,
+      "lines_removed": 10,
+      "mirror": "https://github.com/review-bench/sirosfoundation_go-wallet-backend.git",
+      "pr_url": "https://github.com/sirosfoundation/go-wallet-backend/pull/76",
+      "golden_file": "golden/sirosfoundation_go-wallet-backend_76-28ffb41a.json",
+      "candidate_reference_indices": {
+        "simplify": [
+          6
+        ],
+        "performance": [
+          6
+        ]
+      },
+      "selection_reason": "多余字符串与字节转换",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "development",
+      "references": [
+        {
+          "role": "simplify",
+          "id": "redundant-hex-byte-conversion",
+          "upstream_indices": [
+            6
+          ],
+          "evidence": [
+            "internal/service/webauthn.go:524-537"
+          ],
+          "criterion": "Hex string converted to bytes only to log via ByteString; use matching string field without changing rendered content."
+        },
+        {
+          "role": "performance",
+          "id": "redundant-hex-byte-conversion",
+          "upstream_indices": [
+            6
+          ],
+          "evidence": [
+            "internal/service/webauthn.go:524-537"
+          ],
+          "criterion": "Unnecessary byte conversion on registration error path; optional micro-optimization, not high-throughput measured regression."
+        }
+      ]
+    },
+    {
+      "nwo": "torchfont/torchfont",
+      "pr_number": 133,
+      "base": "5a2c993caa9c1183f58b1cc50aea6a2609d96959",
+      "head": "7604bc745c38d151e23b8f7528a65f74c2613545",
+      "language": "Python",
+      "files_changed": 6,
+      "lines_added": 183,
+      "lines_removed": 21,
+      "mirror": "https://github.com/review-bench/torchfont_torchfont.git",
+      "pr_url": "https://github.com/torchfont/torchfont/pull/133",
+      "golden_file": "golden/torchfont_torchfont_133-7604bc74.json",
+      "candidate_reference_indices": {
+        "performance": [
+          1
+        ],
+        "comments": [
+          16
+        ]
+      },
+      "selection_reason": "按项访问触发全量物化、公开类型文档缺失",
+      "adjudication_status": "code_inspected_before_baseline",
+      "reference_indices_are_zero_based": true,
+      "split": "holdout",
+      "references": [
+        {
+          "role": "performance",
+          "id": "eager-all-style-axes",
+          "upstream_indices": [
+            1
+          ],
+          "evidence": [
+            "torchfont/datasets.py:363-365",
+            "torchfont/datasets.py:444-452",
+            "src/dataset/mod.rs:102-110"
+          ],
+          "criterion": "First locate calls all-style getter and builds all Python axes; cost scales with entire dataset rather than requested style."
+        },
+        {
+          "role": "comments",
+          "id": "undocumented-public-style-axes",
+          "upstream_indices": [
+            16
+          ],
+          "evidence": [
+            "torchfont/datasets.py:547",
+            "torchfont/metadata.py:6-20",
+            "docs/en/reference/datasets.md",
+            "docs/ja/reference/datasets.md"
+          ],
+          "criterion": "Public StyleAxis and axes fields added but reference docs omit them."
+        }
+      ]
+    }
+  ],
+  "frozen_at": "2026-11-11T05:30:43.100037+00:00",
+  "runtime_hashes": {
+    "src/comments.ts": "e5a3d60c50765a6bbaca60e358c2dd8024411483b58f22a926a29ddf0a48536b",
+    "src/config.ts": "06793c7796d646a364260f597f46fcaec8263ad4a2a4e40c952c05b0e39731c2",
+    "src/context-tools.ts": "cf85e4fa52814e38840ac3beedec648eac587a15a81811e17d2f65c0e09c60c9",
+    "src/performance.ts": "2782ed4348ec5537ce3b12dca01e7e9a56f3eeef589de169f3647c6e337516fb",
+    "src/quality.ts": "8442d737dceb14606127ad67a96a77ddd96556ca46a4bd939fe28e92c71e2a1b",
+    "src/repo.ts": "c5a6de0bb1ec308edd03f78381c67ac33bcd1c1ea9ef00b583c0ec7572d10ea3",
+    "src/report.ts": "2f41774d98de5b1a3d42a71dc8ec01df97ea18457ab768631403a91cfa320f5d",
+    "src/runner.ts": "21c7b07353f1d17ae53d5eb75f3982054370978968282195c0512abf5178bdaa",
+    "src/simplify.ts": "b97e091220d632cd1205d44a9571fa3a29980e08b418e1194fa753468c6ecf6a",
+    "src/task.ts": "33152991f59b3edb2a313aed0d750a5acc56017f62faa6f59745e4c04a5c2b93",
+    "src/tasks.ts": "85e76728266ab1459362ab5de2fc8df46f3f91e483b8d45302d9d2ca4ad9bcdf",
+    "prompts/LICENSE-APACHE-2.0.txt": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+    "prompts/SOURCES.md": "e4eed91866fc0bbc74289f150ab1f1f9817b882006f650b6a45dd08d3c8367b3",
+    "prompts/comments.md": "e0f0c6da2855fdda26c0574f89d3ec3265736c806ea2c53020af747b9c0e34cf",
+    "prompts/performance.md": "12927c1c19cdd34a0db194db871b85875c60222c5bfcfa9f536ff7863d497e02",
+    "prompts/quality.md": "ecac3c39b53891eed16cf68f3a06091772f86af3f5eebdbc65f4dfcec76a7295",
+    "prompts/simplify.md": "d296a5adbc8603b24d409936d56ffdf25dc98e16728f855797dfedbdd1176499"
+  },
+  "configuration": {
+    "model": "gpt-6.1-sol",
+    "effort": "high",
+    "max_turns": 30,
+    "compact_threshold": 120000,
+    "tool_sets": "snapshot,workspace"
+  },
+  "controls": [
+    {
+      "id": "catalog-quality",
+      "nwo": "Imageomics/catalog",
+      "role": "quality",
+      "target": "silent-extra-repo-errors"
+    },
+    {
+      "id": "catalog-performance",
+      "nwo": "Imageomics/catalog",
+      "role": "performance",
+      "target": "duplicate-model-fetch"
+    },
+    {
+      "id": "wallet-simplify",
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "role": "simplify",
+      "target": "redundant-hex-byte-conversion"
+    },
+    {
+      "id": "mcp-comments",
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "role": "comments",
+      "target": "false-auto-recovery"
+    }
+  ]
+}

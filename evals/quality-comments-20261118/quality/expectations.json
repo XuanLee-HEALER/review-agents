@@ -1,0 +1,97 @@
+{
+  "date": "2026-11-18",
+  "protocol": "Freeze eligible root causes and severity before running these cases. Keep this manifest and historical reviewer results outside the reviewer workspace. Give each role a clean detached checkout, exact base/head, and its own new private task. Compare root cause and remedy even when a report describes a different symptom. Judge each reported finding against the code independently of role or report status.",
+  "configuration": {
+    "model": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "compactThreshold": 120000,
+    "toolSets": "snapshot,workspace,web"
+  },
+  "promptHashes": {
+    "quality": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+    "performance": "89ca06f36a45d2f74c839f27b8f398c29de004ca1f37989b306ccba0a0b5dbdb"
+  },
+  "cases": [
+    {
+      "id": "catalog",
+      "repo": "Imageomics_catalog",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "roles": ["quality"],
+      "performanceReference": "advisory-replay-20261118.json, selected performance_candidate, named workspace",
+      "expected": [
+        "Independent quality target, suggestion: a configured external repository fetch can fail while the scheduled exporter exits successfully and silently leaves its tags out. scripts/export-tags.js:69-77,132-158 discards the per-repo HTTP/network/JSON error; main.js:310-324 retains a diagnostic. Preserve partial export and log the repository and error. Existing unrelated catch paths do not invalidate an introduced silent omission.",
+        "Performance overlap if reported: the successful external model result is fetched again in main.js:326-345 and scripts/export-tags.js:139-150. Request count and data loss after a failed second fetch share one remedy: reuse the successful result. Extra request count alone warrants at most a suggestion on this opt-in path; an independently demonstrated materially worse failure may be assessed separately for severity while retaining the same root attribution.",
+        "A phase dependency between external detail and organization model details is a separate performance root; absent material measured or hard-limit impact it warrants at most a suggestion.",
+        "Compatibility claims must use the editable, publicly documented configuration path and identify a concrete old-config deployment precondition. The shipped file already declares the empty list, so do not claim the shipped default fails or assume an undocumented update path. Do not credit unsupported provider aliases, credential speculation, or generic DRY preferences."
+      ]
+    },
+    {
+      "id": "catalog-performance-repaired",
+      "repo": "catalog-performance",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+      "roles": ["quality"],
+      "performanceReference": "advisory-replay-20261118.json, catalog-repaired, selected performance_candidate, named workspace",
+      "expected": [
+        "No repeat of the removed duplicate external detail lookup. The retained silent export omission remains the same independent quality suggestion, not a false positive recurrence.",
+        "Distinguish independently supported phase ordering from the repaired root. Do not require concurrency just because the batches run serially."
+      ]
+    },
+    {
+      "id": "catalog-quality-repaired",
+      "repo": "catalog-quality",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "ac7e37f323ff31c591a8d9da597bfeac1a2b0580",
+      "roles": ["quality"],
+      "expected": [
+        "The same configured repository failure now logs a warning before returning null. Do not repeat the silent diagnostic finding. The duplicate external detail fetch remains, and carries the original overlap and calibration expectations."
+      ]
+    },
+    {
+      "id": "wellness",
+      "repo": "Tzeusy_butlers",
+      "base": "80a6ace5ce2cf83655f41507a7c59e423809c9cc",
+      "head": "ef80c60bd0c2a2de1266ab5b556ecea9bf5c002a",
+      "roles": ["quality", "performance"],
+      "expected": [
+        "Independent reliability target, blocking: roster/health/tools/wellness_ingest.py:279-291 permanently caches a failed first list_health_scoped_accounts lookup as an empty account set. A subsequent healthy lookup is not attempted, and translate_wellness_envelope:331-340 rejects valid envelopes until the daemon restarts. Cache only a successful lookup, including legitimate empty results. The base tries the database again on the next call.",
+        "The tool registration docstring in roster/health/modules/tools.py:347 describes the old status, while the changed translator returns rejected_non_owner_sender. Count a concrete documentation-contract mismatch separately; it does not cover the cache behavior. Do not infer that callers branch on the old value without inspecting them.",
+        "The empty sender predicate was present in the base. The new cache explicitly describes session-lifetime refresh; stale-account or ownership claims require evidence about the supported registry lifecycle and callers."
+      ]
+    },
+    {
+      "id": "wellness-repaired",
+      "repo": "Tzeusy_butlers",
+      "base": "80a6ace5ce2cf83655f41507a7c59e423809c9cc",
+      "head": "6f28715d6a81b15a7d54b360d29409cf4cc8f43b",
+      "roles": ["quality"],
+      "expected": [
+        "The authentic upstream follow-up restores retry on the next envelope and updates the tool status docstring. Neither root should recur. Inspect any other findings on their own evidence."
+      ]
+    },
+    {
+      "id": "directory-positive",
+      "repo": "report-positive",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "f19b7cbd789abaa7a2d816d4da1ef15051df7015",
+      "roles": ["quality"],
+      "performanceReference": "advisory-replay-20261118.json, selected performance_candidate, neutral workspace",
+      "expected": [
+        "If Quality flags the reachable >64 and <=200 record abort, label it blocking and attribute it to the same repeated same-team lookup as Performance. Distinguish severity calibration from reviewer independence; a proven hard workload limit can belong to both roles. A correct hoist must preserve the zero-record behavior."
+      ]
+    },
+    {
+      "id": "directory-negative",
+      "repo": "report-negative",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "638d47fa947467a575bdb1af5c5c0b70a519b349",
+      "roles": ["quality"],
+      "performanceReference": "advisory-replay-20261118.json, selected performance_candidate, neutral workspace",
+      "expected": [
+        "Routine negative: preserve per-row lookups because row ID determines classification, including equal text. The cap is 16 rows against 64 calls. Do not report the bounded serial path as redundant or blocking. Findings outside that scenario require independent introduced-impact evidence."
+      ]
+    }
+  ]
+}

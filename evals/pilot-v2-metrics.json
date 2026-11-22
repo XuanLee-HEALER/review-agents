@@ -1,0 +1,237 @@
+{
+  "baseline": {
+    "runs": 13,
+    "completed": 13,
+    "findings": 15,
+    "classification_counts": {
+      "supported_actionable": 10,
+      "supported_optional": 5
+    },
+    "supported": 15,
+    "matched_references": 7,
+    "eligible_references": 11,
+    "missed_references": [
+      [
+        "AA-Factory/aafactory-prototype",
+        "quality",
+        "missing-pytest-plugins"
+      ],
+      [
+        "Tzeusy/butlers",
+        "quality",
+        "duplicated-runtime-fixtures"
+      ],
+      [
+        "sirosfoundation/go-wallet-backend",
+        "performance",
+        "redundant-hex-byte-conversion"
+      ],
+      [
+        "sirosfoundation/go-wallet-backend",
+        "simplify",
+        "redundant-hex-byte-conversion"
+      ]
+    ],
+    "within_report_duplicate_findings": 0,
+    "total_tokens": 2095323,
+    "summed_run_seconds": 939.1,
+    "compactions": 1
+  },
+  "by_role": {
+    "quality": {
+      "runs": 4,
+      "completed": 4,
+      "findings": 6,
+      "classification_counts": {
+        "supported_actionable": 6
+      },
+      "supported": 6,
+      "matched_references": 1,
+      "eligible_references": 3,
+      "missed_references": [
+        [
+          "AA-Factory/aafactory-prototype",
+          "quality",
+          "missing-pytest-plugins"
+        ],
+        [
+          "Tzeusy/butlers",
+          "quality",
+          "duplicated-runtime-fixtures"
+        ]
+      ],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 753285,
+      "summed_run_seconds": 266.5,
+      "compactions": 0
+    },
+    "performance": {
+      "runs": 3,
+      "completed": 3,
+      "findings": 3,
+      "classification_counts": {
+        "supported_actionable": 1,
+        "supported_optional": 2
+      },
+      "supported": 3,
+      "matched_references": 2,
+      "eligible_references": 3,
+      "missed_references": [
+        [
+          "sirosfoundation/go-wallet-backend",
+          "performance",
+          "redundant-hex-byte-conversion"
+        ]
+      ],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 294009,
+      "summed_run_seconds": 190.8,
+      "compactions": 0
+    },
+    "simplify": {
+      "runs": 3,
+      "completed": 3,
+      "findings": 2,
+      "classification_counts": {
+        "supported_optional": 2
+      },
+      "supported": 2,
+      "matched_references": 1,
+      "eligible_references": 2,
+      "missed_references": [
+        [
+          "sirosfoundation/go-wallet-backend",
+          "simplify",
+          "redundant-hex-byte-conversion"
+        ]
+      ],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 746156,
+      "summed_run_seconds": 286.6,
+      "compactions": 1
+    },
+    "comments": {
+      "runs": 3,
+      "completed": 3,
+      "findings": 4,
+      "classification_counts": {
+        "supported_actionable": 3,
+        "supported_optional": 1
+      },
+      "supported": 4,
+      "matched_references": 3,
+      "eligible_references": 3,
+      "missed_references": [],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 301873,
+      "summed_run_seconds": 195.3,
+      "compactions": 0
+    }
+  },
+  "by_split": {
+    "development": {
+      "runs": 8,
+      "completed": 8,
+      "findings": 8,
+      "classification_counts": {
+        "supported_actionable": 7,
+        "supported_optional": 1
+      },
+      "supported": 8,
+      "matched_references": 3,
+      "eligible_references": 6,
+      "missed_references": [
+        [
+          "AA-Factory/aafactory-prototype",
+          "quality",
+          "missing-pytest-plugins"
+        ],
+        [
+          "sirosfoundation/go-wallet-backend",
+          "performance",
+          "redundant-hex-byte-conversion"
+        ],
+        [
+          "sirosfoundation/go-wallet-backend",
+          "simplify",
+          "redundant-hex-byte-conversion"
+        ]
+      ],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 929519,
+      "summed_run_seconds": 473.9,
+      "compactions": 0
+    },
+    "holdout": {
+      "runs": 5,
+      "completed": 5,
+      "findings": 7,
+      "classification_counts": {
+        "supported_actionable": 3,
+        "supported_optional": 4
+      },
+      "supported": 7,
+      "matched_references": 4,
+      "eligible_references": 5,
+      "missed_references": [
+        [
+          "Tzeusy/butlers",
+          "quality",
+          "duplicated-runtime-fixtures"
+        ]
+      ],
+      "within_report_duplicate_findings": 0,
+      "total_tokens": 1165804,
+      "summed_run_seconds": 465.3,
+      "compactions": 1
+    }
+  },
+  "all_runs": {
+    "count": 21,
+    "total_tokens": 3350069
+  },
+  "controls": [
+    {
+      "id": "catalog-quality",
+      "target_detected_before": true,
+      "target_repeated_after": false,
+      "diagnostic_pair": true,
+      "findings_after": 1
+    },
+    {
+      "id": "catalog-performance",
+      "target_detected_before": true,
+      "target_repeated_after": false,
+      "diagnostic_pair": true,
+      "findings_after": 1
+    },
+    {
+      "id": "wallet-simplify",
+      "target_detected_before": false,
+      "target_repeated_after": false,
+      "diagnostic_pair": false,
+      "findings_after": 0
+    },
+    {
+      "id": "mcp-comments",
+      "target_detected_before": true,
+      "target_repeated_after": false,
+      "diagnostic_pair": true,
+      "findings_after": 2
+    }
+  ],
+  "repeats": [
+    {
+      "id": "AA-Factory_aafactory-prototype-quality",
+      "intersection": 2,
+      "union": 2,
+      "same_root_causes": true
+    },
+    {
+      "id": "UniverseCitiz3n_msgraph-kb-mcp-comments",
+      "intersection": 2,
+      "union": 2,
+      "same_root_causes": true
+    }
+  ]
+}

@@ -1,0 +1,955 @@
+{
+  "expectationsSha256": "b00b0a5bee0d2e7738ca29222d6a0afc3ccc35649faeb14077062d128714663e",
+  "hashes": {
+    "prompts/quality.md": "149703d476c00e81a76d2c331cf15708a8d2af247358c0a514dc623b55c74d48",
+    "bin/review-quality": "33d4fcd9a0ed458341e0e96cb1581f77f421538e335d8832fddb00ef5c22dd34",
+    "dist/quality.js": "27b20ee0f8f043ca810d8f5cd886a4e90fdf5930ba69c68535906090794d43df",
+    "src/api-error.ts": "482c1b7f7cdd804346a3ccea508d13b84d5f6c61732d02b200a6a2a4c8a96df8",
+    "src/comments.ts": "e5a3d60c50765a6bbaca60e358c2dd8024411483b58f22a926a29ddf0a48536b",
+    "src/config.ts": "06793c7796d646a364260f597f46fcaec8263ad4a2a4e40c952c05b0e39731c2",
+    "src/context-tools.ts": "68ac26c8a09434e406badbfa1ad790b3a553475b90336a46509923cc31d7b431",
+    "src/model-config.ts": "9c51a0b7a62564c0d569ede9933b0412c9c505da09d5dfac01664eda2aa03370",
+    "src/performance.ts": "2782ed4348ec5537ce3b12dca01e7e9a56f3eeef589de169f3647c6e337516fb",
+    "src/quality.ts": "8442d737dceb14606127ad67a96a77ddd96556ca46a4bd939fe28e92c71e2a1b",
+    "src/repo.ts": "f8b7edbc82eb2f4b2d2d44af83556a83f56dd1aa3d2c22b33a7b468ec00a593d",
+    "src/report.ts": "394416ef86fd4949c85935d370a4a7260e6465f0f3a31abd807ce8abde371b0e",
+    "src/runner.ts": "c1ec337ec7979d9b7d2bf07ba96e858eab7daba2500b9836a50c8944a69bb781",
+    "src/simplify.ts": "b97e091220d632cd1205d44a9571fa3a29980e08b418e1194fa753468c6ecf6a",
+    "src/task.ts": "33152991f59b3edb2a313aed0d750a5acc56017f62faa6f59745e4c04a5c2b93",
+    "src/tasks.ts": "cc1874166451d5c48f9f341b26fe82b612ac7b112402b911d4e9492d365fc92a",
+    "src/web-queries.ts": "fc0807a500ec8e25d77f45b1ffc3a1e29b46596c6360e744de07c66d60e40ad9"
+  },
+  "runtimeUnchanged": false,
+  "runs": [
+    {
+      "case": "catalog",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "exitCode": 1,
+      "durationMs": 96279,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "011281e69ed6dedf332959a3917e643a8ea6fee7c934d5e4320872525c6f3646",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "已审阅全部四个文件的固定差异，并追踪到浏览器渲染、标签导出和每周扫描。需先修复四个阻塞问题：外部仓库元数据可使目录渲染失败或被当作 HTML 解析，外部模型的重复请求可使整个模型分类加载失败，标签导出还可能把 GitHub 令牌发送给 Hugging Face。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "main.js",
+          "line": 326,
+          "title": "缺少可选的 cardData 会使整个结果列表无法渲染",
+          "evidence": "新增合并逻辑直接接纳外部仓库详情。Hugging Face 官方 JS 客户端将详情响应中的 `cardData` 定义为可选字段；没有该字段的有效仓库可以通过第 355 行的标签提取，但非新建仓库会在第 500 行读取 `item.cardData.stars` 时抛错。第 570 行在赋值给 `innerHTML` 之前先生成所有卡片，因此一条这样的记录就能阻止默认「Search All」视图渲染，包括无关的 GitHub 卡片。解引用原本就存在，本次新增了能触发它的外部仓库路径。",
+          "recommendation": "在入库时将缺失的 `cardData` 归一化为空对象，或在卡片和两处星标／点赞排序中统一安全读取。验证缺少 `cardData` 的外部仓库与正常仓库混合时仍可渲染和排序。"
+        },
+        {
+          "severity": "blocking",
+          "path": "main.js",
+          "line": 312,
+          "title": "外部仓库可编辑的卡片元数据被当作目录 HTML",
+          "evidence": "新增详情请求把仓库维护者可修改的 README 卡片描述和标签送入现有渲染器。第 458–460 行直接插入标签，第 468、541 行直接插入描述，最终由第 570 行的 `innerHTML` 解析。配置只固定仓库 ID，并不能约束该仓库之后发布的内容；启用外部仓库后，其维护者可在目录页面中插入 HTML，造成页面内容被篡改或脚本在目录站点上下文中执行。",
+          "recommendation": "将描述和标签按纯文本渲染，使用 `textContent` 或在插入 HTML 模板前转义。补一个含普通 HTML 特殊字符的元数据用例，确认内容按字面显示。"
+        },
+        {
+          "severity": "blocking",
+          "path": "main.js",
+          "line": 326,
+          "title": "外部模型被重复请求，第二次失败会波及组织模型",
+          "evidence": "第 312 行已经从模型详情端点取得完整记录；第 326 行先将其合并，第 330–345 行又对合并后的每个模型调用同一详情端点。若外部模型第一次成功、第二次因网络错误或 JSON 解析失败而拒绝，第二轮 `Promise.all` 会整体拒绝，外层捕获返回空数组，已正常获取的组织模型也不会入库。导出脚本第 134–150 行也重复请求同一详情；它不会清空整个分类，但会丢弃第一次已经成功取得的外部模型。",
+          "recommendation": "浏览器和导出脚本都只为组织列表中的模型补取详情，再合并已成功取得的外部详情。验证每个外部模型只请求一次，且外部请求失败不影响组织模型。"
+        },
+        {
+          "severity": "blocking",
+          "path": "scripts/export-tags.js",
+          "line": 134,
+          "title": "外部仓库请求可能携带 GitHub 令牌",
+          "evidence": "新增调用把仓库 ID 拼进 Hugging Face URL 后传给 `get()`；该帮助函数在第 71 行检查整个 URL 是否包含 `api.github.com`，而不是检查请求源。Hugging Face 仓库名允许点号，包含该字符串的合法仓库名即可触发第 72 行添加 `Authorization`，即使请求仍发往 `huggingface.co`。每周扫描明确向此脚本注入 `GITHUB_TOKEN`，而且令牌是在检查响应状态之前发送的。",
+          "recommendation": "仅在解析后的 URL 源精确等于 `https://api.github.com` 时附加 GitHub 凭据，或让 Hugging Face 请求使用不带 GitHub 认证的帮助函数。验证路径中含 GitHub 主机名的非 GitHub 请求不携带认证头。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "main.js",
+          "line": 769,
+          "title": "共用同一套仓库配置校验，并检查文档约定的格式",
+          "evidence": "README 第 85 行和配置注释要求 `repo` 为 `owner/name`，但浏览器此处与导出脚本第 53–59 行各自只检查非空字符串和类别。例如，误粘贴完整的 Hugging Face 仓库链接也能通过两处校验，之后却被当作路径片段拼入详情 URL，维护者得不到针对格式错误的配置提示。",
+          "recommendation": "用一个浏览器与 Node 都可导入的小型校验函数，统一检查条目类型、类别和 `owner/name` 结构；各入口保留自己的错误展示方式。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "scripts/export-tags.js",
+          "line": 136,
+          "title": "标签导出应能指出哪个已配置仓库未读取成功",
+          "evidence": "`get()` 的错误原本包含 HTTP 状态和 URL，但新增的捕获直接将其替换为 `null`。外部仓库返回 404 或 429 时，脚本仍写出标签文件并报告成功；每周扫描随后只看标签差异，日志无法区分该仓库没有新标签和它根本没有被读取。浏览器对应分支已保留逐仓库警告。",
+          "recommendation": "继续允许单仓库失败时导出其他标签，但记录失败的仓库 ID 和 HTTP 状态或简要错误原因。"
+        }
+      ],
+      "checked": [
+        "完整读取 README.md、main.js、public/config.yaml 和 scripts/export-tags.js 的差异，并用固定提交的源文件核对行号。",
+        "对照 base 和 head 追踪了配置加载、模型详情请求、卡片渲染和排序、标签文件写入，以及每周扫描对导出结果的使用。",
+        "核对了模板指南、标签分组指南、部署配置，以及 Hugging Face 官方客户端的详情响应类型、仓库 ID 规则和 API 限流文档。"
+      ],
+      "limitations": [
+        "这是静态审阅；未运行 Vite、浏览器、标签导出脚本或 GitHub Actions，也未对真实仓库执行端到端验证。",
+        "未发现固定仓库中仍依赖缺少新键的旧配置的调用方，未将旧格式兼容性列为阻塞。"
+      ],
+      "turns": 9,
+      "compactions": 0,
+      "totalTokens": 391539,
+      "coverage": {
+        "changedFiles": 4,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:main.js",
+          "head:scripts/export-tags.js",
+          "head:README.md",
+          "head:.github/workflows/weekly-tag-scan.yml",
+          "head:docs/tag-grouping-process.md",
+          "head:package.json",
+          "base:main.js",
+          "head:public/config.yaml",
+          "head:scripts/fetch-releases.js",
+          "base:scripts/export-tags.js",
+          "head:index.html",
+          "head:.github/workflows/deploy.yml"
+        ],
+        "searches": 4,
+        "toolCalls": 44,
+        "toolErrors": [],
+        "webQueries": {
+          "attempts": 16,
+          "failures": 0,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "catalog-performance-repaired",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+      "exitCode": 1,
+      "durationMs": 133428,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "1004a68c687623e516217083a0b5f30c66935745ef1c19565f43ff6695d948bd",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "发现两项阻塞问题：新增标签导出路径可能把 GitHub 写权限令牌发给 Hugging Face；缺少 `cardData` 的合法外部仓库会让整个目录结果列表渲染失败。另有三项建议，涉及导出诊断、配置迁移和重复校验。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "scripts/export-tags.js",
+          "line": 135,
+          "title": "不要向 Hugging Face 请求附带 GitHub 令牌",
+          "evidence": "新增的单仓库请求把配置中的仓库名拼进 URL，再传给 `get()`。该函数在第 69–75 行用 `url.includes('api.github.com')` 决定是否附带令牌，并未检查请求来源。Hugging Face 仓库名允许点号，因此路径中的仓库名就可能触发该判断，即使目标仍是默认的 `huggingface.co`。每周扫描工作流在第 21–23、39–42 行为导出脚本提供带仓库写权限的 `GITHUB_TOKEN`。基线没有这条使用外部 Hugging Face 仓库名的请求路径。",
+          "recommendation": "仅在解析后的 URL 来源严格等于 `https://api.github.com` 时附带 GitHub 令牌。用替身 `fetch` 和假令牌验证：即使 Hugging Face URL 的路径匹配原有子串条件，请求也不包含 `Authorization`。"
+        },
+        {
+          "severity": "blocking",
+          "path": "main.js",
+          "line": 330,
+          "title": "缺少卡片元数据的外部模型会阻断整个列表渲染",
+          "evidence": "新增分支把外部详情直接合并到结果。Hugging Face 的 `https://huggingface.co/api/models/hf-internal-testing/tiny-random-bert` 实际返回了公开模型及其 2022 年创建时间，但没有 `cardData`。按默认 30 天窗口，该模型不会走“新仓库”徽章分支；第 505 行访问 `item.cardData.stars` 时会抛出异常，第 575 行因此无法写入整个列表，而不只是少一张卡片。第 639–648 行的星标排序也有同样的直接访问。基线只从组织列表收集模型，不会经配置引入这个外部条目。",
+          "recommendation": "在 Hugging Face 条目规范化时将缺失的 `cardData` 设为空对象，保留现有的点赞回退。用一条无 `cardData` 的外部模型和一条正常条目验证默认列表及星标排序。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "scripts/export-tags.js",
+          "line": 137,
+          "title": "区分外部仓库获取失败和没有标签",
+          "evidence": "`get()` 会生成带 HTTP 状态和 URL 的错误，但新增分支将错误直接转为 `null`。遇到限流或网络故障时，导出仍会写入部分快照并打印 `Done`；每周扫描随后使用该文件统计新增标签，日志却无法指出哪个来源被漏掉。浏览器的对应分支已保留仓库名和失败原因。",
+          "recommendation": "保留逐仓库继续处理的行为，但在跳过时记录仓库类型、仓库名和失败原因，并明确标记本次快照不完整。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "README.md",
+          "line": 85,
+          "title": "说明保留自定义配置时如何升级",
+          "evidence": "README 第 30、48–55 行将配置描述为可独立编辑，并介绍了模板上游更新方式。基线配置没有 `ADDITIONAL_HF_REPOS`；如果升级时保留原配置，前端在 `main.js:770–771` 拒绝加载，最终因组织名为空而跳过初始化，标签导出也会在 `scripts/export-tags.js:48–51` 退出。随新版发放的配置已有空数组，不受影响。当前 README 虽然说没有额外仓库时使用 `[]`，但没有说明这是保留旧配置时必须补做的迁移步骤。",
+          "recommendation": "若该字段必须显式声明，在模板更新说明和标签导出指南中写明需要补上 `ADDITIONAL_HF_REPOS: []`。若无需强制迁移，则让两个入口都只在缺键时默认使用空数组，仍拒绝显式提供的无效值。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "scripts/export-tags.js",
+          "line": 53,
+          "title": "让前端和标签导出共用外部仓库校验规则",
+          "evidence": "`scripts/export-tags.js:48–61` 与 `main.js:770–779` 分别维护相同的数组检查、合法类型和仓库名判定，却读取同一份 `public/config.yaml`。两处真正不同的是错误呈现：前端汇总校验错误，CLI 附上配置路径并退出。若只更新其中一份规则，同一配置就可能只在一个入口通过。",
+          "recommendation": "提取一个无 I/O 的小型校验函数，返回校验结果；由前端和 CLI 各自保留现有的错误呈现方式。"
+        }
+      ],
+      "checked": [
+        "完整读取四个变更文件的固定差异，并核对基线和当前版本的配置校验、请求合并、排序及渲染路径。",
+        "检查了模板升级说明、未修改的标签分组指南，以及每周扫描的令牌注入和快照消费路径。",
+        "只读查询了 Hugging Face 公开详情接口，并核对了上游仓库命名规则。"
+      ],
+      "limitations": [
+        "未运行构建、浏览器、标签导出脚本或 GitHub Actions；未用任何令牌发送请求。阻塞结论来自固定源码的调用链和公开 API 响应。",
+        "未核实有多少下游模板保留旧版自定义配置，因此将迁移说明列为建议，不要求兼容旧格式。"
+      ],
+      "turns": 14,
+      "compactions": 1,
+      "totalTokens": 560572,
+      "coverage": {
+        "changedFiles": 4,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:main.js",
+          "head:scripts/export-tags.js",
+          "head:README.md",
+          "head:public/config.yaml",
+          "head:.github/workflows/weekly-tag-scan.yml",
+          "head:docs/tag-grouping-process.md",
+          "head:package.json",
+          "head:.github/workflows/deploy.yml",
+          "base:main.js",
+          "base:public/config.yaml",
+          "head:scripts/fetch-releases.js",
+          "base:scripts/export-tags.js",
+          "head:index.html"
+        ],
+        "searches": 4,
+        "toolCalls": 72,
+        "toolErrors": [
+          "fetch_document: UnexpectedRedirect fetching \"https://huggingface.co/api/models/SSHLEIFER/tiny-gpt2\". For more information, pass `verbose: true` in the second argument to fetch()"
+        ],
+        "webQueries": {
+          "attempts": 25,
+          "failures": 1,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "catalog-quality-repaired",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "ac7e37f323ff31c591a8d9da597bfeac1a2b0580",
+      "exitCode": 1,
+      "durationMs": 149979,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "7c22e3b45f1597023314b11c1bc3473a4eee40b0c6861951e73aa8e403304881",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "完整审查了 4 个变更文件，发现 2 项阻塞问题：新增的 Hugging Face 请求可能携带 GitHub 令牌；合法的外部模型缺少 `cardData` 时会中断整个列表的渲染。另有 3 项关于重复请求、配置迁移和校验复用的建议。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "scripts/export-tags.js",
+          "line": 134,
+          "title": "Hugging Face 仓库路径可能触发 GitHub 令牌发送",
+          "evidence": "新增的外部仓库请求把 `entry.repo` 拼进 Hugging Face URL，再交给 `get()`。该函数在第 71–75 行用 `url.includes('api.github.com')` 决定是否附加 `Authorization`；因此，只要通过校验的仓库路径包含这个字符串，即使实际主机仍是 `huggingface.co`，请求也会携带 GitHub 令牌。周度扫描在 `.github/workflows/weekly-tag-scan.yml:39–42` 为导出步骤提供了该令牌。即使目标仓库不存在，凭据也会随初始请求发出。",
+          "recommendation": "解析 URL 并精确匹配 `https://api.github.com` 的源后才附加 GitHub 凭据，或让 Hugging Face 请求使用独立的无鉴权请求函数。增加一个回归用例，验证路径中出现 GitHub 域名不会触发鉴权。"
+        },
+        {
+          "severity": "blocking",
+          "path": "main.js",
+          "line": 326,
+          "title": "缺少 `cardData` 的外部模型会中断整个列表渲染",
+          "evidence": "新增合并逻辑让外部模型进入现有卡片渲染流程。公开 API `https://huggingface.co/api/models/sshleifer/tiny-gpt2` 返回有效模型记录，`createdAt` 为 2022 年，但没有 `cardData`。将这个符合 README 格式的模型加入配置后，在默认 30 天阈值下会走非新品分支；第 500 行直接读取 `item.cardData.stars`，抛出异常。第 570 行先生成全部卡片再更新 DOM，因此包含该模型的 Models 或 All 列表无法完成渲染。第 634–643 行的热度排序也有同样的直接访问。",
+          "recommendation": "在 Hugging Face 条目标准化时将缺失的 `cardData` 设为 `{}`，或同时在徽章和排序代码中使用可选链并保留点赞数回退。增加一个缺少 `cardData` 的外部模型用例，覆盖列表渲染和热度排序。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "scripts/export-tags.js",
+          "line": 142,
+          "title": "复用已取得的外部模型详情，避免再次请求后丢失条目",
+          "evidence": "外部模型已通过详情端点取得完整响应，但合并后第 145–153 行又按 `id` 请求详情，并用第二批响应整体替换结果。第二次请求失败时，导出器会静默丢弃第一次已成功取得的模型，仍写出标签基线；周度扫描随后把这份基线当作完整结果。浏览器 `main.js:326–345` 也重复请求，且第二次请求若发生网络拒绝，会使整批模型加载失败。",
+          "recommendation": "仅为组织列表中的模型补取详情，再合并已经取得的外部模型详情。验证每个外部模型只请求一次，且一个外部请求失败不会丢弃其余已成功取得的结果。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "README.md",
+          "line": 85,
+          "title": "明确升级时保留自定义配置的迁移步骤",
+          "evidence": "README 说明配置可在部署后独立编辑，也介绍了模板更新方式，但新条目只说明无外部仓库时使用 `[]`，没有明确该键现在必须存在。基线版本的配置没有这个键；若升级时保留原有配置，浏览器会因校验失败跳过初次数据加载，标签导出器也会在采集前退出。未修改的 `docs/tag-grouping-process.md:34–42` 和 `104–114` 仍直接指导用户运行导出。",
+          "recommendation": "若保留必填校验，在 README 的升级说明中明确要求为已有配置添加 `ADDITIONAL_HF_REPOS: []`，并在标签导出指南中链接该前置步骤。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "main.js",
+          "line": 768,
+          "title": "让浏览器和标签导出器共用新增配置的校验规则",
+          "evidence": "`main.js:765–775` 与 `scripts/export-tags.js:48–62` 读取同一个公开配置键，分别重复了列表校验、非空仓库名判断和三种类型枚举。两处实际需要不同的是错误呈现：浏览器汇总错误后显示横幅，导出器附带文件路径并退出。若只修改其中一套规则，同一份配置就可能通过一个入口而被另一个拒绝。",
+          "recommendation": "提取一个小型纯函数，只负责校验该字段并返回问题；浏览器和导出器各自保留现有报错方式。"
+        }
+      ],
+      "checked": [
+        "已读完 `README.md`、`main.js`、`public/config.yaml` 和 `scripts/export-tags.js` 的固定差异，并对照基线实现。",
+        "已追踪配置加载、外部仓库请求、卡片渲染、排序、标签导出及周度扫描工作流，并核对未修改的标签分组指南。",
+        "已匿名读取 Hugging Face 的公开模型详情响应，确认有效响应可以不含 `cardData`。"
+      ],
+      "limitations": [
+        "未运行构建、浏览器交互、标签导出脚本或 GitHub Actions；运行后果依据固定源码和公开 API 响应推导。",
+        "未发送带凭据的请求，也未验证是否曾发生令牌外发。"
+      ],
+      "turns": 14,
+      "compactions": 1,
+      "totalTokens": 550325,
+      "coverage": {
+        "changedFiles": 4,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:main.js",
+          "head:scripts/export-tags.js",
+          "head:README.md",
+          "head:.github/workflows/weekly-tag-scan.yml",
+          "head:docs/tag-grouping-process.md",
+          "head:package.json",
+          "head:public/config.yaml",
+          "base:main.js",
+          "head:.github/workflows/deploy.yml",
+          "base:scripts/export-tags.js",
+          "base:public/config.yaml"
+        ],
+        "searches": 5,
+        "toolCalls": 67,
+        "toolErrors": [
+          "fetch_document: UnexpectedRedirect fetching \"https://huggingface.co/api/spaces/gradio/HELLO_WORLD\". For more information, pass `verbose: true` in the second argument to fetch()"
+        ],
+        "webQueries": {
+          "attempts": 22,
+          "failures": 1,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 1,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "wellness",
+      "base": "80a6ace5ce2cf83655f41507a7c59e423809c9cc",
+      "head": "ef80c60bd0c2a2de1266ab5b556ecea9bf5c002a",
+      "exitCode": 1,
+      "durationMs": 198520,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "be1f36c71881c1c585da7a09cc0a25a778944f6c79cd8d08e1d7c9ce771fe223",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "发现 1 项阻塞问题：首次查询账号注册表时的短暂故障会被缓存为“没有合格账号”，导致数据库恢复后，合法发送者仍无法通过校验。另有 2 项非阻塞建议，涉及验收测试的输入格式和公开工具文档。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "roster/health/tools/wellness_ingest.py",
+          "line": 290,
+          "title": "首次账号查询失败会让后续摄取持续拒绝合法发送者",
+          "evidence": "`list_health_scoped_accounts` 在获取数据库连接或执行查询失败时会抛出异常。第 286–290 行将异常转换为空集合并写入模块级缓存；第 280–281 行把空集合也视为缓存已初始化。后续 `wellness_ingest_envelope` 调用复用该缓存，不会重新查询，即使数据库已恢复，也会把合法发送者标记为 `rejected_non_owner_sender`。生产代码没有清除此缓存的路径；基线只拒绝当次请求，下次调用会重新查询。",
+          "recommendation": "只缓存成功的查询结果。查询失败时仍拒绝当次摄取，但保留未初始化状态，并返回与“查询成功但没有合格账号”可区分的错误。补充同一进程内首次查询抛异常、第二次返回有效账号的回归测试，验证第二次确实重新查询且发送者通过校验。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "roster/health/tests/test_wellness_ingest.py",
+          "line": 885,
+          "title": "次账号验收测试未覆盖连接器实际生成的事件格式",
+          "evidence": "新增用例使用 `_make_sleep_envelope`，生成 `google_health:sleep_session:<id>`；实际连接器的 `build_sleep_session_envelope`（`src/butlers/connectors/google_health.py:483`）生成 `google_health:<email>:sleep_session:<id>`。两个版本的转换器都把第二段当作资源名，因此真实事件即使通过身份校验，也会在写入前返回 `skipped_unknown_predicate`。新增用例的 `status == \"ok\"` 断言绕过了这一既有问题，不能验证次账号事件可从连接器走到写入。",
+          "recommendation": "保留发送者校验的单元测试，另用生产构造器生成一条次账号事件，验证实际资源类型以及传给存储层的确切 owner UUID；在补齐这条路径的测试时修正事件 ID 解析。"
+        },
+        {
+          "severity": "suggestion",
+          "path": "roster/health/tools/wellness_ingest.py",
+          "line": 340,
+          "title": "公开 MCP 工具仍声明旧的拒绝状态",
+          "evidence": "转换器现在返回 `rejected_non_owner_sender`。`roster/health/modules/tools.py:347` 仍将 `rejected_non_primary_sender` 列为工具返回值，而第 354–356 行直接返回转换结果，没有映射状态。未发现依赖旧状态的可执行调用方，因此已确认的问题是文档与实际接口不一致。",
+          "recommendation": "更新 `wellness_ingest_envelope` 的公开文档字符串，使其列出的状态与实际返回值一致。"
+        }
+      ],
+      "checked": [
+        "完整阅读固定基线与目标提交之间两个变更文件的全部 diff 页，并核对发现所引用的源文件行号。",
+        "追踪账号注册表的查询和异常行为、生产缓存引用、连接器事件构造与路由、MCP 工具的返回文档及相关测试夹具。"
+      ],
+      "limitations": [
+        "仅做静态审查；未运行 pytest、数据库或 MCP 集成验证。",
+        "未验证外部任务对缓存生命周期或旧状态兼容性的要求；未将这些要求作为阻塞依据。"
+      ],
+      "turns": 29,
+      "compactions": 2,
+      "totalTokens": 1164936,
+      "coverage": {
+        "changedFiles": 2,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:roster/health/modules/tools.py",
+          "head:src/butlers/google_account_registry.py",
+          "head:roster/health/modules/__init__.py",
+          "head:roster/health/tools/wellness_ingest.py",
+          "base:roster/health/tools/wellness_ingest.py",
+          "head:openspec/specs/butler-health/spec.md",
+          "head:src/butlers/connectors/google_health.py",
+          "head:src/butlers/credential_store.py",
+          "head:src/butlers/modules/pipeline.py",
+          "head:roster/switchboard/tools/routing/contracts.py",
+          "head:roster/health/tests/test_wellness_ingest.py",
+          "base:roster/health/tests/test_wellness_ingest.py",
+          "head:docs/concepts/trigger-flow.md",
+          "head:roster/switchboard/tools/ingestion/ingest.py",
+          "head:src/butlers/core_tools/_routing.py",
+          "base:src/butlers/connectors/google_health.py",
+          "head:src/butlers/cli.py",
+          "head:tests/connectors/test_google_health_connector.py",
+          "head:alembic/versions/core/core_109_google_health_ingestion_event_email_prefix.py",
+          "head:pyproject.toml",
+          "head:src/butlers/api/routers/oauth.py"
+        ],
+        "searches": 87,
+        "toolCalls": 151,
+        "toolErrors": [],
+        "webQueries": {
+          "attempts": 0,
+          "failures": 0,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "wellness-repaired",
+      "base": "80a6ace5ce2cf83655f41507a7c59e423809c9cc",
+      "head": "6f28715d6a81b15a7d54b360d29409cf4cc8f43b",
+      "exitCode": 1,
+      "durationMs": 208448,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "bb0a774f4849c349f0ecea49b60e1b57a5f8094976a36779a0c4f9f2148a6cf8",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "发现 2 个阻塞问题：发送者校验在进程内永久缓存账号状态；新增的次账号验收测试没有使用生产连接器生成的信封，因而未发现真实信封仍无法写入。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "roster/health/tools/wellness_ingest.py",
+          "line": 286,
+          "title": "账号状态变更在后续摄取会话中不生效",
+          "evidence": "基线每次校验都查询当前主账号。新版把首次成功查询的结果（包括空集合）存入模块全局变量，后续调用不再读注册表。`src/butlers/core_tools/_routing.py:525–539` 为各次路由启动独立会话，但这些会话仍调用同一 Health 守护进程中的工具。若首次查询只看到 A，之后通过账号 API 绑定具备 Health 权限的 B 并将其设为主账号（`src/butlers/api/routers/oauth.py:1579–1599`），B 的信封在新会话中仍返回 `rejected_non_owner_sender`；基线则会读到 B 并通过发送者校验。若随后断开 A，旧缓存也仍会让 A 通过这一步校验。",
+          "recommendation": "移除进程级缓存，或把缓存绑定到实际的路由会话，而不是守护进程。增加跨会话测试，验证新增账号、断开账号以及首次查询为空后完成绑定的情况，无需重启即可生效。"
+        },
+        {
+          "severity": "blocking",
+          "path": "roster/health/tests/test_wellness_ingest.py",
+          "line": 885,
+          "title": "次账号验收测试绕过了生产信封的解析失败",
+          "evidence": "新增测试用三段式 ID `google_health:sleep_session:<id>` 并断言写入成功。两个版本的实际连接器都按账号轮询并发送四段式 ID `google_health:<email>:<resource>:<id>`（`src/butlers/connectors/google_health.py:483,537,1769–1787`）。基线在发送者校验处拒绝次账号；新版让符合条件的次账号通过，但 `roster/health/tools/wellness_ingest.py:375–390` 仍把第二段邮箱当成资源名，返回 `skipped_unknown_predicate`，未调用事实写入。解析缺陷不是本次引入的，但它阻断了本次新放行的次账号路径，而新增测试无法验证该路径实际写入。",
+          "recommendation": "在次账号验收测试中直接使用生产连接器的信封构造函数，修正译码器对当前 ID 格式的资源提取，并断言正确的谓词和所有者实体 ID 被传给事实写入函数。"
+        }
+      ],
+      "checked": [
+        "已逐页审阅固定基线与目标提交之间的全部三个变更文件。",
+        "已追踪账号注册表、OAuth 账号变更、路由会话、Health MCP 工具、生产信封构造及公开摄取规范。",
+        "已比较变更前后的发送者校验和信封解析，并检查测试对查询异常、空结果和缓存命中的覆盖。"
+      ],
+      "limitations": [
+        "本次为只读静态审查；未运行测试，也未连接数据库或执行 OAuth、路由及摄取集成流程。"
+      ],
+      "turns": 30,
+      "compactions": 2,
+      "totalTokens": 1208986,
+      "coverage": {
+        "changedFiles": 3,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:src/butlers/google_account_registry.py",
+          "head:roster/health/modules/tools.py",
+          "head:roster/health/tools/wellness_ingest.py",
+          "base:roster/health/tools/wellness_ingest.py",
+          "head:roster/health/modules/__init__.py",
+          "head:openspec/specs/connector-google-health/spec.md",
+          "head:src/butlers/connectors/google_health.py",
+          "head:src/butlers/credential_store.py",
+          "base:src/butlers/connectors/google_health.py",
+          "head:roster/health/tests/test_wellness_ingest.py",
+          "head:src/butlers/cli.py",
+          "head:roster/switchboard/tools/routing/contracts.py",
+          "head:src/butlers/modules/pipeline.py",
+          "head:openspec/specs/google-account-registry/spec.md",
+          "head:tests/connectors/test_google_health_connector.py",
+          "head:src/butlers/core_tools/_routing.py",
+          "head:src/butlers/modules/registry.py",
+          "head:src/butlers/api/routers/oauth.py",
+          "head:alembic/versions/core/core_109_google_health_ingestion_event_email_prefix.py",
+          "base:roster/health/tests/test_wellness_ingest.py",
+          "head:src/butlers/connectors/filtered_event_buffer.py",
+          "head:openspec/changes/archive/2026-04-24-google-health-connector/e3-recon.md",
+          "head:openspec/specs/butler-health/spec.md"
+        ],
+        "searches": 79,
+        "toolCalls": 145,
+        "toolErrors": [],
+        "webQueries": {
+          "attempts": 0,
+          "failures": 0,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "directory-positive",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "f19b7cbd789abaa7a2d816d4da1ef15051df7015",
+      "exitCode": 1,
+      "durationMs": 20226,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "271db14b70018000498fe46e02e5d80b2bd03ededb1eec9c963ccfbd9f99934d",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "findings",
+      "summary": "新增的逐行团队名称查询会耗尽目录配额，导致原本支持的 65 至 200 条记录的导出无法完成。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "render.js",
+          "line": 11,
+          "title": "同一团队的重复查询在第 65 行耗尽目录配额",
+          "evidence": "renderReport 接受最多 200 行，但现在每行都用同一个 teamId 调用 teamName。directory.js:5、11–14 为每次渲染提供 64 次查询额度，每次调用都会扣减额度。即使上游查询全部成功，第 65 行仍会抛出 `directory quota exhausted`，导致整份报告不返回。现有的 200 行测试会走到这条失败路径；基线没有逐行查询。",
+          "recommendation": "非空报告只查询一次团队名称，并在循环中复用结果。每次导出只有一个 teamId，目录视图在导出期间保持不变；空报告则继续直接返回，不发起查询。可在现有 200 行测试中同时断言团队名称和查询次数。"
+        }
+      ],
+      "checked": [
+        "完整 diff 与 render.js 的基线和变更版本",
+        "directory.js 的配额扣减逻辑、README.md 的导出约定、render.test.js 的 200 行测试及 package.json 的测试入口"
+      ],
+      "limitations": [
+        "未运行 Bun 测试；第 65 行失败由静态调用链和配额逻辑确认。"
+      ],
+      "turns": 4,
+      "compactions": 0,
+      "totalTokens": 11123,
+      "coverage": {
+        "changedFiles": 1,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:render.js",
+          "head:directory.js",
+          "head:README.md",
+          "head:render.test.js",
+          "head:package.json",
+          "base:render.js"
+        ],
+        "searches": 3,
+        "toolCalls": 10,
+        "toolErrors": [],
+        "webQueries": {
+          "attempts": 0,
+          "failures": 0,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "directory-negative",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "638d47fa947467a575bdb1af5c5c0b70a519b349",
+      "exitCode": 0,
+      "durationMs": 14297,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "c2366ac126a0a8235df3002d10e18ef685c2a17e4059d2834bb159caec6b5180",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace",
+        "web"
+      ],
+      "status": "pass",
+      "summary": "未发现此变更新增的实质性实现问题。分类预览按记录 ID 查询，并保留输入顺序；16 条记录的上限低于每次目录实例的 64 次调用预算。原有报表入口未改动。",
+      "findings": [],
+      "checked": [
+        "阅读了两个变更文件的完整差异，并对照了基线与提交后的实现和测试。",
+        "核对了目录预算、按记录 ID 查询的接口和 README 中关于固定目录视图及记录顺序的约定。",
+        "确认新增测试覆盖了文本相同、ID 不同的记录仍返回各自分类的情形。"
+      ],
+      "limitations": [
+        "仅进行了静态审查，未运行 Bun 测试，也未通过真实目录客户端验证集成行为。"
+      ],
+      "turns": 3,
+      "compactions": 0,
+      "totalTokens": 9719,
+      "coverage": {
+        "changedFiles": 2,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:render.js",
+          "base:render.js",
+          "head:render.test.js",
+          "base:render.test.js",
+          "head:directory.js",
+          "head:README.md",
+          "head:package.json"
+        ],
+        "searches": 1,
+        "toolCalls": 10,
+        "toolErrors": [],
+        "webQueries": {
+          "attempts": 0,
+          "failures": 0,
+          "skipped": 0,
+          "invalid": 0,
+          "consecutiveUnsuccessful": 0,
+          "paused": false
+        }
+      }
+    },
+    {
+      "case": "guide-before",
+      "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+      "head": "38d72cf761b235e41dc1a285e8eae666619c55a0",
+      "exitCode": 1,
+      "durationMs": 13832,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "67235ce5c3a02d2da83cb9e30e565f07d7c6ff199e26783dbcdeb24057e6de91",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace"
+      ],
+      "status": "findings",
+      "summary": "通知接口改为读取 `delivery.channel`，但 README 链接的集成指南仍使用顶层 `channel`。调用方照抄指南中的请求示例，会从原先收到 `201` 变为收到 `400`。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "src/notifications.js",
+          "line": 14,
+          "title": "新请求格式会拒绝集成指南中的示例",
+          "evidence": "`docs/notifications.md:5–9` 给出的 `POST /notifications` 请求体是 `{\"channel\":\"email\"}`。基线处理器读取顶层 `channel` 并返回 `201`；变更后只读取 `delivery.channel`，同一请求会返回 `400` 和 `{\"error\":\"invalid_channel\"}`。`tests/notifications.test.js:13–20` 也明确断言旧示例会被拒绝，但指南仍未更新。",
+          "recommendation": "在同一变更中更新集成指南，明确必填字段为 `delivery.channel`，并将请求示例改为 `{\"delivery\":{\"channel\":\"email\"}}`。响应格式未变，无需修改响应示例。"
+        }
+      ],
+      "checked": [
+        "读完两个变更文件的全部差异，并对照基线和变更后的处理器及测试。",
+        "沿 README 的链接核对了集成指南中的请求和响应示例。"
+      ],
+      "limitations": [
+        "未运行 Bun 测试；上述行为由处理器代码和测试断言静态确认。",
+        "仓库中未发现依赖旧格式的独立调用方，也无法确认仓库外调用方的迁移状态。"
+      ],
+      "turns": 3,
+      "compactions": 0,
+      "totalTokens": 9354,
+      "coverage": {
+        "changedFiles": 2,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:README.md",
+          "head:docs/notifications.md",
+          "base:docs/notifications.md",
+          "head:src/notifications.js",
+          "base:src/notifications.js",
+          "head:tests/notifications.test.js",
+          "base:tests/notifications.test.js"
+        ],
+        "searches": 1,
+        "toolCalls": 10,
+        "toolErrors": []
+      }
+    },
+    {
+      "case": "guide-revised",
+      "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+      "head": "18743033c06a7f036124c45d54c0edd8b3a99fcb",
+      "exitCode": 0,
+      "durationMs": 13260,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "830528f42cae758fefd1f797d973a42590ffddfd55dbab26638e09888a7a2df2",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace"
+      ],
+      "status": "pass",
+      "summary": "未发现此次变更新增的实质性实现问题。处理器、集成指南和测试均采用 `delivery.channel`；成功响应仍返回 `201` 和 `data.channel`。",
+      "findings": [],
+      "checked": [
+        "审阅了全部三个变更文件的完整差异，并对照了基线与提交版本。",
+        "确认 `email` 和 `push` 仍是允许的渠道；旧的顶层 `channel` 请求现在返回 `400 invalid_channel`，新增测试覆盖了这一行为。",
+        "核对了 README 指向的集成指南，并检索了仓库内的接口引用；未发现仍依赖旧请求格式的调用方或兼容性承诺。"
+      ],
+      "limitations": [
+        "仅进行了静态审查，未运行 Bun 测试。",
+        "无法验证仓库外是否仍有调用方使用旧请求格式。"
+      ],
+      "turns": 4,
+      "compactions": 0,
+      "totalTokens": 14866,
+      "coverage": {
+        "changedFiles": 3,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:README.md",
+          "base:README.md",
+          "head:src/notifications.js",
+          "base:src/notifications.js",
+          "head:docs/notifications.md",
+          "head:tests/notifications.test.js",
+          "base:docs/notifications.md",
+          "base:tests/notifications.test.js"
+        ],
+        "searches": 2,
+        "toolCalls": 13,
+        "toolErrors": []
+      }
+    },
+    {
+      "case": "wording",
+      "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+      "head": "1e2c1a645f36f29088330f680960de7f186b5ecf",
+      "exitCode": 0,
+      "durationMs": 10067,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "a7654193ef9270d840cdfbaef3e626583be7b1e56d98b3a053b7f0f5b782794a",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace"
+      ],
+      "status": "pass",
+      "summary": "未发现需要修正的问题。此次仅修改文档，新增说明与处理器行为一致：成功时返回 `201`，且 `data.channel` 与调用方提交的有效渠道相同。",
+      "findings": [],
+      "checked": [
+        "完整审阅了 `docs/notifications.md` 的差异，并对照了修改前后的文档。",
+        "核对了 `src/notifications.js` 的渠道校验与成功响应，并阅读了 `tests/notifications.test.js` 中针对 `email` 的响应断言。"
+      ],
+      "limitations": [
+        "仅进行了静态审阅，未运行测试。"
+      ],
+      "turns": 4,
+      "compactions": 0,
+      "totalTokens": 10238,
+      "coverage": {
+        "changedFiles": 1,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:docs/notifications.md",
+          "head:src/notifications.js",
+          "head:tests/notifications.test.js",
+          "base:docs/notifications.md",
+          "head:README.md"
+        ],
+        "searches": 1,
+        "toolCalls": 7,
+        "toolErrors": []
+      }
+    },
+    {
+      "case": "archive-first",
+      "base": "8fe0dba1b84fbe8d3184073f34d864b7e5618aa1",
+      "head": "674bd524c1f2db7fc0e1ec1961405e64e5bfd549",
+      "exitCode": 1,
+      "durationMs": 13218,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "904dd8b1805d2c9365a6ecb1745e04b2163e7c4acd263044945b14b89704ca3a",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace"
+      ],
+      "status": "findings",
+      "summary": "分批逻辑将每批限制为 50 条，但反转了归档和删除的顺序：如果归档写入在持久化前失败，已从源队列删除的审计事件将无法在下一轮重试。",
+      "findings": [
+        {
+          "severity": "blocking",
+          "path": "src/archive.js",
+          "line": 8,
+          "title": "归档成功前删除源事件，导致写入失败时无法重试",
+          "evidence": "旧实现先等待 `archive.write` 成功，再删除源事件；新实现在每批中先等待 `source.remove`，再调用 `archive.write`。如果删除成功而写入在持久化前失败，下一轮调用从 `source.list()` 取数时将读不到该批事件。这违反了 README 中「写入成功前保留源事件，失败后由下一轮重试」的约定。新增测试只检查批次大小，且 `remove` 是空操作，无法捕获这条回归。",
+          "recommendation": "保留分批逻辑，但每批先 `await archive.write(batch)`，成功后再删除对应的源事件。补充写入拒绝的回归测试，断言失败批次的事件仍留在源队列，并能在下一轮成功归档。"
+        }
+      ],
+      "checked": [
+        "读完两个变更文件的全部差异，核对了基线与变更后实现及源码行号。",
+        "核对了 README 中的重试和写入幂等约定，以及仓库内 `archiveAuditEvents` 的引用和测试夹具。"
+      ],
+      "limitations": [
+        "未运行 Bun 测试；结论来自固定版本的源码、测试和文档。"
+      ],
+      "turns": 3,
+      "compactions": 0,
+      "totalTokens": 9207,
+      "coverage": {
+        "changedFiles": 2,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:README.md",
+          "base:README.md",
+          "head:src/archive.js",
+          "base:src/archive.js",
+          "head:tests/archive.test.js",
+          "base:tests/archive.test.js"
+        ],
+        "searches": 2,
+        "toolCalls": 10,
+        "toolErrors": []
+      }
+    },
+    {
+      "case": "archive-second",
+      "base": "8fe0dba1b84fbe8d3184073f34d864b7e5618aa1",
+      "head": "d246516de1235f89cc18c4b189056acb64c8c0ca",
+      "exitCode": 0,
+      "durationMs": 18085,
+      "cleanHeadAfter": true,
+      "configurationMatched": true,
+      "reportSha256": "01734cbdc4654eab41a3dad3db7cc6dc147561da10df0ebbe1369b932234906e",
+      "completedEvidence": true,
+      "requestedModel": "gpt-6.2-sol",
+      "effort": "high",
+      "actualModels": [
+        "gpt-6.2-sol"
+      ],
+      "maxTurns": 30,
+      "toolSets": [
+        "snapshot",
+        "workspace"
+      ],
+      "status": "pass",
+      "summary": "未发现阻塞问题。实现逐批等待归档写入成功后才删除源事件，符合 README 的重试约定。新增测试验证了批大小，但没有覆盖第二批写入失败时的队列状态。",
+      "findings": [
+        {
+          "severity": "suggestion",
+          "path": "tests/archive.test.js",
+          "line": 21,
+          "title": "验证第二批写入失败后仍可重试",
+          "evidence": "旧测试只覆盖单条事件成功归档；新增测试将 `source.remove` 设为空操作，且两批写入都成功，因此只验证返回值和批大小。如果第二批在写入成功前就被删除，现有断言仍会通过，但写入失败后，下次运行将无法从源队列重试这批事件。",
+          "recommendation": "增加一个第二批写入失败的用例，让 `source.remove` 按 ID 更新测试队列。断言归档调用抛出写入错误、第一批已移除、第二批仍留在队列中；再让写入恢复并验证下次运行只处理剩余事件。"
+        }
+      ],
+      "checked": [
+        "完整阅读了 `src/archive.js` 和 `tests/archive.test.js` 的差异，并对照了修改前后的源码。",
+        "核对了 `README.md` 的删除顺序、失败重试和幂等约定，并静态追踪了空队列、跨批成功和后续批次写入失败的路径。"
+      ],
+      "limitations": [
+        "未执行 Bun 测试；结论来自固定版本的源码和测试审查。",
+        "仓库未包含实际 worker 或存储适配器，无法验证生产环境中的重试调度和适配器行为。"
+      ],
+      "turns": 3,
+      "compactions": 0,
+      "totalTokens": 9402,
+      "coverage": {
+        "changedFiles": 2,
+        "unreadDiff": [],
+        "readFiles": [
+          "head:README.md",
+          "base:README.md",
+          "head:src/archive.js",
+          "base:src/archive.js",
+          "head:tests/archive.test.js",
+          "base:tests/archive.test.js"
+        ],
+        "searches": 1,
+        "toolCalls": 9,
+        "toolErrors": []
+      }
+    }
+  ]
+}

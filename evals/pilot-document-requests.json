@@ -1,0 +1,618 @@
+[
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/agents/reference/mcp-configuration.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/2025-11-25/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality",
+    "url": "https://docs.pytest.org/en/8.3.x/how-to/fixtures.html#requesting-fixtures"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality",
+    "url": "https://docs.pytest.org/en/8.3.x/how-to/skipping.html#skipping-async-tests"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/pytest-dev/pytest/8.3.5/src/_pytest/python.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/pytest-dev/pytest-mock/v3.14.0/README.rst"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/agronholm/anyio/4.7.0/src/anyio/pytest_plugin.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-quality",
+    "url": "https://huggingface.co/docs/hub/api"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-quality",
+    "url": "https://huggingface.co/docs/hub/api.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-quality",
+    "url": "https://huggingface.co/.well-known/openapi.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/customizing-copilot/coding-agent/extending-copilot-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/modelcontextprotocol/main/docs/docs/develop/connect-local-servers.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp-quickstart.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/contents/docs/copilot"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/github/docs/contents/content/copilot/how-tos/use-copilot-agents"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/api/article?pathname=/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/agents/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/docs/develop/connect-local-servers.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/agents/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://support.claude.com/en/articles/10949351-getting-started-with-local-mcp-servers-on-claude-desktop"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/contents/docs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/modelcontextprotocol/modelcontextprotocol/contents"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/docs/lib/content/commands/npm-install.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/contents/docs/agent-customization"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://api.github.com/repos/modelcontextprotocol/modelcontextprotocol/contents/docs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/docs/lib/content/commands/npm-exec.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality",
+    "url": "https://docs.pytest.org/en/8.3.x/how-to/fixtures.html"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/pytest-dev/pytest/8.3.5/src/_pytest/python.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality",
+    "url": "https://pytest-mock.readthedocs.io/en/latest/usage.html"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/agronholm/anyio/4.7.0/src/anyio/pytest_plugin.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality",
+    "url": "https://raw.githubusercontent.com/msiemens/tinydb/v4.8.2/tinydb/table.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/contents/docs/copilot"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/github/docs/contents/content/copilot/how-tos"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/docs/develop/connect-local-servers.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/contents"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/github/docs/contents/content/copilot/how-tos/use-copilot-agents"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/modelcontextprotocol/modelcontextprotocol/contents/docs/develop"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://docs.npmjs.com/cli/v10/using-npm/scripts"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/git/trees/f623be01cc297d04cd157febd6e3ff4c308c5fdc"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/github/docs/contents/content/copilot/how-tos/use-copilot-agents/cloud-agent"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/docs/lib/content/using-npm/scripts.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/docs/lib/content/configuring-npm/package-json.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/node_modules/pacote/lib/git.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/node_modules/npm-packlist/lib/index.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/node_modules/pacote/lib/dir.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/node_modules/pacote/lib/fetcher.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/package.json"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/cloud-agent/use-cloud-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://api.github.com/repos/microsoft/vscode-docs/git/trees/14e9933bc69d08da36091884926ca7a721aca2ee"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.8.2/docs/lib/content/commands/npx.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/agent-customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/pacote/lib/dir.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/npm-packlist/lib/index.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/agent-customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/quickstart/user.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/field.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/zapcore/json_encoder.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/zapcore/console_encoder.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/go-webauthn/webauthn/v0.16.3/go.mod"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/go-webauthn/webauthn/v0.16.3/webauthn/registration.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/config.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-comments",
+    "url": "https://docs.rs/skrifa/0.41.0/src/skrifa/variation.rs.html"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-comments",
+    "url": "https://raw.githubusercontent.com/googlefonts/fontations/skrifa-v0.41.0/skrifa/src/variation.rs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/logger.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/go-webauthn/webauthn/v0.16.3/webauthn/registration.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/sirosfoundation/webauthn/v0.16.2-siros2/webauthn/registration.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/zapcore/core.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/go-webauthn/webauthn/v0.16.3/protocol/attestation.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/sirosfoundation/webauthn/v0.16.2-siros2/protocol/attestation.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance",
+    "url": "https://raw.githubusercontent.com/uber-go/zap/v1.27.1/field.go"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/agent-customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-performance",
+    "url": "https://raw.githubusercontent.com/PyO3/pyo3/v0.28.2/src/conversions/std/vec.rs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-performance",
+    "url": "https://raw.githubusercontent.com/PyO3/pyo3/v0.28.2/src/conversions/std/tuple.rs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-quality",
+    "url": "https://raw.githubusercontent.com/python/cpython/3.12/Lib/unittest/test/testmock/testasync.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-quality",
+    "url": "https://raw.githubusercontent.com/python/cpython/3.12/Lib/test/test_unittest/testmock/testasync.py"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/agents/reference/mcp-configuration.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/@npmcli/arborist/lib/arborist/rebuild.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/docs/lib/content/configuring-npm/package-json.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/pacote/lib/git.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/ignore-walk/lib/index.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/npm-packlist/package.json"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/cli/v10.9.2/node_modules/minimatch/dist/commonjs/index.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://api.github.com/repos/npm/npm-packlist/contents/test"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/npm-packlist/v9.0.0/test/package-json-main.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/npm-packlist/v9.0.0/test/package-json-bin-single.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/npm/npm-packlist/v9.0.0/test/ignores.js"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent/extending-copilot-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/torchfont_torchfont-comments",
+    "url": "https://docs.rs/skrifa/0.41.0/skrifa/variation/struct.NamedInstance.html"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/torchfont_torchfont-comments",
+    "url": "https://docs.rs/skrifa/0.41.0/skrifa/struct.NamedInstance.html"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/torchfont_torchfont-comments",
+    "url": "https://raw.githubusercontent.com/googlefonts/fontations/skrifa-v0.41.0/skrifa/src/variation.rs"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/docs/develop/connect-local-servers.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/extend-cloud-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://docs.github.com/api/article/body?pathname=/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/docs/develop/connect-local-servers.mdx"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp-quickstart.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/chat/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://docs.github.com/en/copilot/customizing-copilot/adding-mcp-servers-to-copilot-coding-agent"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/copilot/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/quickstart/user"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://code.claude.com/docs/en/mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://code.visualstudio.com/docs/agents/customization/mcp-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://modelcontextprotocol.io/docs/develop/connect-local-servers"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/github/docs/main/content/copilot/how-tos/use-copilot-agents/coding-agent/extending-copilot-coding-agent-with-mcp.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/microsoft/vscode-docs/main/docs/copilot/customization/mcp-servers.md"
+  },
+  {
+    "run": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments",
+    "url": "https://raw.githubusercontent.com/modelcontextprotocol/docs/main/docs/develop/connect-local-servers.mdx"
+  }
+]

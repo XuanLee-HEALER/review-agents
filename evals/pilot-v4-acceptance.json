@@ -1,0 +1,22 @@
+{
+  "candidate": "v4",
+  "passed": true,
+  "checks": {
+    "all_21_runs_complete": true,
+    "full_diff_coverage": true,
+    "all_findings_adjudicated": true,
+    "no_confirmed_incorrect_findings": true,
+    "overall_recall_at_least_9_of_11": true,
+    "simplify_2_of_2": true,
+    "comments_3_of_3": true,
+    "no_repaired_target_recurrence": true,
+    "no_packaging_false_claim": true,
+    "sdk_diagnostic_has_no_speculative_abstraction": true,
+    "repeat_targets_retained": true,
+    "runtime_matches_frozen_candidate": true,
+    "stored_role_prompts_match": true,
+    "actual_model_and_tools": true
+  },
+  "unresolved_findings": 0,
+  "scope": "Known-set advisory regression gate. Engineering tests and skill-link smoke checks are recorded separately; not a general production guarantee."
+}

@@ -1,0 +1,387 @@
+[
+  {
+    "phase": "baseline",
+    "id": "AA-Factory_aafactory-prototype-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "missing-pytest-plugins",
+        "classification": "supported_actionable",
+        "reference": "missing-pytest-plugins",
+        "evaluator_evidence": "pyproject.toml dev deps and lock lack installed plugin packages for mocker/pytest.mark.asyncio; extra declarations are not installed dependencies."
+      },
+      {
+        "index": 1,
+        "cause": "unpatched-local-alias",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "test_mock_chat.py:2 imports the loader before module attribute patch at 25-31; line33 retains original alias; interface.py:55 onward accesses database."
+      },
+      {
+        "index": 2,
+        "cause": "tests-call-mock",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "test_mock_chat.py:18-35 calls the newly patched mock; side_effect itself mutates history. interface.py:77-94 is the uncalled production orchestration."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "Imageomics_catalog-performance",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-performance/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "duplicate-model-fetch",
+        "classification": "supported_actionable",
+        "reference": "duplicate-model-fetch",
+        "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "Imageomics_catalog-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "duplicate-model-fetch",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+      },
+      {
+        "cause": "silent-extra-repo-errors",
+        "classification": "supported_actionable",
+        "reference": "silent-extra-repo-errors",
+        "evaluator_evidence": "export-tags.js136 catches get rejection as null then export continues; no repo/error diagnostic. Frontend already logs. Repaired control adds log before same null result, verified with mock-network experiment.",
+        "index": 1
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "Imageomics_catalog-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4/baseline/Imageomics_catalog-comments/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "missing-config-key-comment",
+        "classification": "supported_actionable",
+        "reference": "missing-config-key-comment",
+        "evaluator_evidence": "export-tags.js header11-12 omits mandatory ADDITIONAL_HF_REPOS validated at48-51."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "SiaFoundation_indexd-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/SiaFoundation_indexd-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "metrics-first-page-only",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "admin.go:1316 requests AppStats/hosts.Stats with offset0 limit1000; SQL stats.go applies LIMIT/OFFSET; API promises total/all metrics without pagination. No streaming-encoder reference credited."
+      },
+      {
+        "cause": "state-construction-duplication",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "admin.go722-748 and1257-1280 construct same State with same reads, field expressions, time threshold; only variable names and response placement differ. Small State,error helper preserves error handlers, optional maintenance improvement.",
+        "index": 1
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "Tzeusy_butlers-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "asyncmock-acquire",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "test_route_execute_trace_decoupling.py:130 uses AsyncMock pool; acquire() returns coroutine, unlike async context manager required by daemon _ensure_owner_entity. Startup catches failure; adjacent owner-bootstrap mock uses synchronous factory."
+      },
+      {
+        "index": 1,
+        "cause": "duplicated-runtime-fixtures",
+        "classification": "supported_optional",
+        "reference": "duplicated-runtime-fixtures",
+        "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "Tzeusy_butlers-simplify",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-simplify/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "duplicated-runtime-fixtures",
+        "classification": "supported_optional",
+        "reference": "duplicated-runtime-fixtures",
+        "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+      },
+      {
+        "index": 1,
+        "cause": "redundant-missing-id-factory",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "test_notify_contact_id.py:311-339 duplicates _patch_infra default DB mocks at80-116 then replaces them. Sole call346 ignores returned DB/pool later. Valid local deletion, different root cause from cross-file runtime factory reuse."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "mcp-config-filename",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation.",
+        "editorial_cleanup_required": "Recommendation contains two NUL placeholders around the filename. Factual diagnosis verified; caller must rewrite Markdown punctuation, never paste raw recommendation. Added caller-side text-format check to comment skill."
+      },
+      {
+        "index": 1,
+        "cause": "false-auto-recovery",
+        "classification": "supported_actionable",
+        "reference": "false-auto-recovery",
+        "evaluator_evidence": "index.ts:19 loadIndex once; loader.ts:208-223 returns before cachedIndex assignment; getIndex cannot refresh. README134 waiting wording omits required restart."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "rulecom_rule-io-sdk-simplify",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/rulecom_rule-io-sdk-simplify/report.json",
+    "judgments": []
+  },
+  {
+    "phase": "baseline",
+    "id": "sirosfoundation_go-wallet-backend-simplify",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "redundant-hex-byte-conversion",
+        "classification": "supported_optional",
+        "reference": "redundant-hex-byte-conversion",
+        "evaluator_evidence": "webauthn.go:526,537 creates ASCII hex string then []byte solely for zap.ByteString; zap.String preserves current JSON/console textual result. Optional error-path cleanup."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "sirosfoundation_go-wallet-backend-performance",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "disabled-debug-encoding",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "webauthn.go:524-570 evaluates encoding arguments and traverses attestation before Debug. Default logger info. Guard avoids unused work; frequency/size not measured. Not a direct finding of redundant string-to-byte conversion."
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "torchfont_torchfont-performance",
+    "raw_report_path": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-performance/report.json",
+    "judgments": [
+      {
+        "cause": "eager-all-style-axes",
+        "classification": "supported_optional",
+        "reference": "eager-all-style-axes",
+        "evaluator_evidence": "datasets.py365 calls _style_axes; 446-452 caches every style tuple; Rust getter mod.rs102-110 clones all entries. First-use O(styles+axes) is certain; no measured latency claimed.",
+        "index": 0
+      }
+    ]
+  },
+  {
+    "phase": "baseline",
+    "id": "torchfont_torchfont-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4/baseline/torchfont_torchfont-comments/report.json",
+    "judgments": [
+      {
+        "cause": "empty-axes-without-named-instance",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "src/dataset/entry.rs134-142 uses vec![vec![]] whenever named-instance locations are empty, including variable fonts. datasets.py87 describes static empty tuples but omits this edge case. Bounded documentation clarification; StyleAxis import from datasets is supported by import and __all__.",
+        "index": 0
+      },
+      {
+        "index": 1,
+        "cause": "undocumented-public-style-axes",
+        "classification": "supported_actionable",
+        "reference": "undocumented-public-style-axes",
+        "evaluator_evidence": "datasets.py:365-373 and metadata.py:21 add axes; en/ja reference locate/style_labels field lists omit it. Static empty tuple and user-space semantic match implementation."
+      }
+    ]
+  },
+  {
+    "phase": "controls",
+    "id": "catalog-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/controls/catalog-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "duplicate-model-fetch",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+      }
+    ]
+  },
+  {
+    "phase": "controls",
+    "id": "catalog-performance",
+    "raw_report_path": ".local/eval-results/pilot-v3/controls/catalog-performance/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "serial-independent-fetch-batches",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "main.js waits all additionalFullModels before starting org detail batch, despite independent inputs. Parallel batches can preserve merge order. New optional scheduling suggestion, not recurrence of removed duplicate request."
+      }
+    ]
+  },
+  {
+    "phase": "controls",
+    "id": "wallet-simplify",
+    "raw_report_path": ".local/eval-results/pilot-v3/controls/wallet-simplify/report.json",
+    "judgments": [
+      {
+        "cause": "manual-base64-field",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "webauthn.go536,547 manually base64-encode; zap v1.27.1 json_encoder.go104-105 AddBinary performs identical encoding, console embeds jsonEncoder. Independent actual-version Go test confirms equivalent field output for JSON/console and nil/empty/binary cases. Not recurrence of removed hex conversion.",
+        "index": 0
+      }
+    ]
+  },
+  {
+    "phase": "controls",
+    "id": "mcp-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4/controls/mcp-comments/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "mcp-config-filename",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+      },
+      {
+        "index": 1,
+        "cause": "release-default-branch-fallback",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README128 unconditionally says latest release; loader.ts106-130 catches tag lookup failure and clones without --branch, get_server_info reports default branch. Correction matches source."
+      }
+    ]
+  },
+  {
+    "phase": "repeat",
+    "id": "AA-Factory_aafactory-prototype-quality",
+    "raw_report_path": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "tests-call-mock",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "test_mock_chat.py:18-35 calls the newly patched mock; side_effect itself mutates history. interface.py:77-94 is the uncalled production orchestration."
+      },
+      {
+        "index": 1,
+        "cause": "unpatched-local-alias",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "test_mock_chat.py:2 imports the loader before module attribute patch at 25-31; line33 retains original alias; interface.py:55 onward accesses database."
+      },
+      {
+        "index": 2,
+        "cause": "missing-pytest-plugins",
+        "classification": "supported_actionable",
+        "reference": "missing-pytest-plugins",
+        "evaluator_evidence": "pyproject.toml dev deps and lock lack installed plugin packages for mocker/pytest.mark.asyncio; extra declarations are not installed dependencies."
+      }
+    ]
+  },
+  {
+    "phase": "repeat",
+    "id": "UniverseCitiz3n_msgraph-kb-mcp-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "mcp-config-filename",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+      },
+      {
+        "index": 1,
+        "cause": "false-auto-recovery",
+        "classification": "supported_actionable",
+        "reference": "false-auto-recovery",
+        "evaluator_evidence": "index.ts:19 loadIndex once; loader.ts:208-223 returns before cachedIndex assignment; getIndex cannot refresh. README134 waiting wording omits required restart."
+      }
+    ]
+  },
+  {
+    "phase": "targeted-repeat",
+    "id": "Tzeusy_butlers-simplify",
+    "raw_report_path": ".local/eval-results/pilot-v3-repeat/baseline/Tzeusy_butlers-simplify/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "duplicated-runtime-fixtures",
+        "classification": "supported_optional",
+        "reference": "duplicated-runtime-fixtures",
+        "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+      },
+      {
+        "index": 1,
+        "cause": "redundant-missing-id-factory",
+        "classification": "supported_optional",
+        "reference": null,
+        "evaluator_evidence": "test_notify_contact_id.py:311-339 duplicates _patch_infra default DB mocks at80-116 then replaces them. Sole call346 ignores returned DB/pool later. Valid local deletion, different root cause from cross-file runtime factory reuse."
+      }
+    ]
+  },
+  {
+    "phase": "targeted-repeat",
+    "id": "mcp-comments",
+    "raw_report_path": ".local/eval-results/pilot-v4-repeat/controls/mcp-comments/report.json",
+    "judgments": [
+      {
+        "index": 0,
+        "cause": "mcp-config-filename",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+      },
+      {
+        "index": 1,
+        "cause": "release-default-branch-fallback",
+        "classification": "supported_actionable",
+        "reference": null,
+        "evaluator_evidence": "README128 unconditionally says latest release; loader.ts106-130 catches tag lookup failure and clones without --branch, get_server_info reports default branch. Correction matches source."
+      }
+    ]
+  }
+]

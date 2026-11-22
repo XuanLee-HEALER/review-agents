@@ -1,0 +1,227 @@
+[
+  {
+    "case": "comments-a",
+    "rolePromptSha256": "bf80a6a33e0ee9835726cdb129579cb86735d288a211de2cb62961a1f84b7f94",
+    "distSha256": "14b3375ff661bd4f4d2d6adeb09328f3db5f3dd333de0f3c589c2a399ef11ee1",
+    "role": "comments",
+    "base": "94f7e555babccca5f6d3e7be4f7d6f0424d013d3",
+    "head": "c5c6170c03b7c13910a13e84d416c125e8fa006c",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "findings",
+    "summary": "发现两处由本次变更造成的文档阻塞问题：按 README 设置 `retryLimit: 0` 无法防止重试，成功回执示例也会把 `undefined` 传给审计写入器。",
+    "findings": [
+      {
+        "severity": "blocking",
+        "path": "delivery.mjs",
+        "line": 2,
+        "title": "README 仍承诺 `retryLimit: 0` 时只调用一次",
+        "evidence": "`README.md:3` 指示不能安全重复的操作将 `retryLimit` 设为 `0`，并承诺即使连接在收到回执前关闭，发送函数也最多调用一次。变更后的 `delivery.mjs:2` 将 `0` 回退为默认值 `2`；根据第 5–10 行，如果第一次发送抛错或返回的 Promise 被拒绝，`deliver` 会再次调用 `send`，最多调用三次。调用者照做仍可能重复执行操作。",
+        "recommendation": "若保留当前实现，将 `README.md:3` 替换为：「不要用 `retryLimit: 0` 禁用重试。当前实现会将 `0` 按默认值 `2` 处理；发送失败后最多重试两次，总计最多调用发送函数三次。」这能防止读者依赖当前实现不提供的单次调用保证。"
+      },
+      {
+        "severity": "blocking",
+        "path": "delivery.mjs",
+        "line": 8,
+        "title": "成功回执示例读取了已不存在的字段",
+        "evidence": "`delivery.mjs:8` 成功时返回 `{ attemptCount: attempts }`，但 `README.md:9` 仍读取 `receipt.attempts`。照抄示例的调用者会把 `undefined` 而非尝试次数传给 `recordAttemptCount`，不满足 `README.md:12` 所述的正整数要求。",
+        "recommendation": "若保留当前回执字段，将 `README.md:9` 替换为 `await recordAttemptCount(receipt.attemptCount);`，使示例传入 `deliver` 实际返回的尝试次数。"
+      }
+    ],
+    "checked": [
+      "完整阅读了 `delivery.mjs` 的固定差异及 base、head 两版源码，核对了重试控制流和成功返回值。",
+      "核对了 base、head 两版 `README.md` 的重试说明和审计示例。固定 head 的追踪文件仅有 `README.md` 和 `delivery.mjs`，没有其他可核对的调用者、测试或审计写入器实现。"
+    ],
+    "limitations": [
+      "重试契约交由实现负责人确认：`retryLimit: 0` 与发送失败同时出现时，仅改文档仍会触发重试。需确认 `0` 是否应继续表示禁用重试，并核对实现与选定契约是否一致。",
+      "回执契约交由实现负责人确认：仅更新示例不会改变现有调用者读取 `receipt.attempts` 时得到 `undefined` 的结果。需确认公开字段应为 `attempts` 还是 `attemptCount`，以及是否有仓库外调用者依赖旧字段。",
+      "结论来自固定源码的静态审查；未执行发送流程，也未验证外部审计写入器如何处理 `undefined`。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 4,
+    "compactions": 0,
+    "totalTokens": 14176,
+    "coverage": {
+      "changedFiles": 1,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:delivery.mjs",
+        "base:delivery.mjs",
+        "head:README.md",
+        "base:README.md"
+      ],
+      "searches": 1,
+      "toolCalls": 6,
+      "toolErrors": []
+    }
+  },
+  {
+    "case": "comments-b",
+    "rolePromptSha256": "bf80a6a33e0ee9835726cdb129579cb86735d288a211de2cb62961a1f84b7f94",
+    "distSha256": "14b3375ff661bd4f4d2d6adeb09328f3db5f3dd333de0f3c589c2a399ef11ee1",
+    "role": "comments",
+    "base": "94f7e555babccca5f6d3e7be4f7d6f0424d013d3",
+    "head": "67865223af76086f0d299ed0703a820ccbce0fac",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "pass",
+    "summary": "README 示例与 `deliver()` 的新返回值一致。未发现阻塞性文档问题；建议补充一条迁移提示，明确旧字段已移除。",
+    "findings": [
+      {
+        "severity": "suggestion",
+        "path": "README.md",
+        "line": 9,
+        "title": "明确收据字段已改名，旧字段不再返回",
+        "evidence": "旧版 `delivery.mjs:8` 返回 `attempts`，当前同一行只返回 `attemptCount`。README 第 9 行已更新示例，但没有说明已有代码也需替换旧字段。若调用方保留旧版 README 的写法，就会把 `undefined` 传给要求正整数的审计写入器。仓库中未发现仍读取旧字段的调用方，也没有明确的兼容性承诺。",
+        "recommendation": "保留第 9 行的正确示例，将 README.md 第 5 行替换为：After a successful delivery, record the attempt count as shown below. If your code reads `receipt.attempts`, update it to read `receipt.attemptCount`; the old field is no longer returned."
+      }
+    ],
+    "checked": [
+      "完整读取了 README.md 和 delivery.mjs 的差异及固定基准版和目标版文件。",
+      "核对了成功返回值、尝试次数的计数时机，以及 `retryLimit: 0` 时发送函数最多调用一次的文档说明。",
+      "检查了固定目标版本的文件清单：只有这两个文件，没有其他可供核对的调用方或测试。"
+    ],
+    "limitations": [
+      "结论来自静态阅读；未执行示例，也未验证仓库外调用方或实际审计写入器的行为。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 3,
+    "compactions": 0,
+    "totalTokens": 11070,
+    "coverage": {
+      "changedFiles": 2,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:README.md",
+        "head:delivery.mjs",
+        "base:README.md",
+        "base:delivery.mjs"
+      ],
+      "searches": 1,
+      "toolCalls": 7,
+      "toolErrors": []
+    }
+  },
+  {
+    "case": "quality-a",
+    "rolePromptSha256": "8cde3057e5d9fa37bb13f5d658515459c8cce2aad02b66e86531298da814fb51",
+    "distSha256": "f65f7a0d8d59905eccde00357bd32b78814545ec97305e93bb02fc093a5d5817",
+    "role": "quality",
+    "base": "94f7e555babccca5f6d3e7be4f7d6f0424d013d3",
+    "head": "c5c6170c03b7c13910a13e84d416c125e8fa006c",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "findings",
+    "summary": "发现两处阻塞性回归：显式禁用重试不再生效，且成功回执不再提供文档约定的尝试次数字段。",
+    "findings": [
+      {
+        "severity": "blocking",
+        "path": "delivery.mjs",
+        "line": 2,
+        "title": "显式设置 `retryLimit: 0` 仍会重试",
+        "evidence": "`README.md:3` 明确保证设置 `retryLimit: 0` 时最多调用一次 `send`，包括在收到回执前连接断开的情况。基线的 `??` 会保留 `0`，首次发送失败后立即抛出错误；改用 `||` 后，`0` 被替换为默认值 `2`，首次失败后会再次调用 `send`，连续失败时总共可调用三次。若首次操作已完成、只是回执未收到，重试可能重复执行该操作。",
+        "recommendation": "恢复 `options.retryLimit ?? 2`，使显式传入的 `0` 继续禁用重试。"
+      },
+      {
+        "severity": "blocking",
+        "path": "delivery.mjs",
+        "line": 8,
+        "title": "成功回执移除了文档调用方依赖的 `attempts` 字段",
+        "evidence": "`README.md:8–12` 的示例将 `receipt.attempts` 传给 `recordAttemptCount`，并明确要求计数为正整数。基线返回 `{ attempts }`，且首次发送前已将计数增至 `1`；变更后只返回 `{ attemptCount }`，因此示例在发送成功后传入 `undefined`，无法满足审计写入接口的参数要求。",
+        "recommendation": "保留成功回执中的 `attempts` 字段；如需引入 `attemptCount`，可将其作为别名，而不是替换现有字段。"
+      }
+    ],
+    "checked": [
+      "已审阅 `delivery.mjs` 的完整差异及固定基线和变更版本。",
+      "已核对 `README.md` 的调用示例与接口约定，并追踪发送成功和失败两条路径。"
+    ],
+    "limitations": [
+      "未运行代码或测试；固定版本中未发现测试文件，两项结论均来自静态追踪。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 4,
+    "compactions": 0,
+    "totalTokens": 10087,
+    "coverage": {
+      "changedFiles": 1,
+      "unreadDiff": [],
+      "readFiles": [
+        "head:delivery.mjs",
+        "head:README.md",
+        "base:delivery.mjs"
+      ],
+      "searches": 2,
+      "toolCalls": 6,
+      "toolErrors": []
+    }
+  },
+  {
+    "case": "quality-b",
+    "rolePromptSha256": "8cde3057e5d9fa37bb13f5d658515459c8cce2aad02b66e86531298da814fb51",
+    "distSha256": "f65f7a0d8d59905eccde00357bd32b78814545ec97305e93bb02fc093a5d5817",
+    "role": "quality",
+    "base": "94f7e555babccca5f6d3e7be4f7d6f0424d013d3",
+    "head": "67865223af76086f0d299ed0703a820ccbce0fac",
+    "requestedModel": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "toolSets": [
+      "snapshot",
+      "workspace"
+    ],
+    "excludedInstructionFiles": [],
+    "status": "pass",
+    "summary": "未发现需要修正的问题。成功回执的计数字段从 `attempts` 改为 `attemptCount`，README 示例已同步更新。仓库内未发现仍依赖旧字段的调用方，也未发现继续支持旧字段的兼容性承诺。",
+    "findings": [],
+    "checked": [
+      "审阅了 `README.md` 和 `delivery.mjs` 的完整差异及变更前后的文件内容。",
+      "确认 `attemptCount` 仍包含首次发送和后续重试的总次数；重试上限及错误传播逻辑未改变。`retryLimit: 0` 时，首次发送失败后会直接抛出错误，不会重试。"
+    ],
+    "limitations": [
+      "仅做静态审阅，未运行代码；固定版本中没有测试文件。"
+    ],
+    "actualModels": [
+      "gpt-6.2-sol"
+    ],
+    "turns": 3,
+    "compactions": 0,
+    "totalTokens": 7855,
+    "coverage": {
+      "changedFiles": 2,
+      "unreadDiff": [],
+      "readFiles": [
+        "base:README.md",
+        "head:README.md",
+        "base:delivery.mjs",
+        "head:delivery.mjs"
+      ],
+      "searches": 1,
+      "toolCalls": 7,
+      "toolErrors": []
+    }
+  }
+]

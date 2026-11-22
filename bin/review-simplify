@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+BUN=${BUN_BIN:-$HOME/.bun/bin/bun}
+exec "$BUN" "$ROOT/dist/simplify.js" "$@"

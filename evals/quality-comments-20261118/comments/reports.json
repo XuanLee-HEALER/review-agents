@@ -1,0 +1,445 @@
+{
+  "date": "2026-11-18",
+  "liveProvider": true,
+  "freshTaskPerRun": true,
+  "caller": {
+    "bun": "1.4.4",
+    "git": "git version 2.54.0 (Apple Git-157)"
+  },
+  "sha256": {
+    "prompts/comments.md": "6371c90b2fa3347ce3fb69e3c4589f5252ada7d503008d23c1b8bc614557e3a0",
+    "dist/comments.js": "58524ff89674c3994eab011d406abb5f2b4b464325f705ac48ae945eb46c60c9",
+    "src/runner.ts": "95f231a9ddc5b21a12a36eb4ce1325cfc2c405da18d40da1f11061dce8e00241",
+    "src/report.ts": "2f41774d98de5b1a3d42a71dc8ec01df97ea18457ab768631403a91cfa320f5d",
+    "src/repo.ts": "f8b7edbc82eb2f4b2d2d44af83556a83f56dd1aa3d2c22b33a7b468ec00a593d",
+    "src/context-tools.ts": "37896cc11a46bb71b832a8c55d2b4319bb2a4b6b84361c34f16bdb3cd72f764c",
+    "evals/quality-comments-20261118/comments/expectations.md": "9cf70c2b8c384353b4007b60f76a965b64ad4ddf79741843fa694f78899ea07a",
+    "evals/quality-comments-20261118/comments/prepare-fixtures.sh": "d47d776e6edecaa0266d15ee704505600cda374039161e10cf3d4c64c527dba4"
+  },
+  "reports": [
+    {
+      "caseId": "guide-before",
+      "exitCode": 1,
+      "elapsedMs": 13155,
+      "rawReportSha256": "6a8c6000244d10a365ad20f0aa315fd2aaa10515e285de8aa8bf0956c3870237",
+      "invalidControlCharacters": [],
+      "report": {
+        "role": "comments",
+        "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+        "head": "38d72cf761b235e41dc1a285e8eae666619c55a0",
+        "requestedModel": "gpt-6.2-sol",
+        "actualModels": [
+          "gpt-6.2-sol"
+        ],
+        "effort": "high",
+        "maxTurns": 10,
+        "toolSets": [
+          "snapshot",
+          "workspace"
+        ],
+        "status": "findings",
+        "summary": "通知接口改为读取 `delivery.channel`，但 README 链接的集成指南仍展示顶层 `channel`。按指南发送请求会收到 `400`，而不是文档所述的 `201`。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "src/notifications.js",
+            "line": 14,
+            "title": "集成指南仍使用接口已拒绝的请求格式",
+            "evidence": "`docs/notifications.md:3–9` 的请求示例是 `{\"channel\":\"email\"}`。处理器在 `src/notifications.js:14–16` 只读取 `body?.delivery?.channel`，缺少该字段时返回 `400` 和 `{\"error\":\"invalid_channel\"}`。`tests/notifications.test.js:13–19` 明确断言旧示例会被拒绝。",
+            "recommendation": "将 `docs/notifications.md:3–9` 的请求说明改为“向 `POST /notifications` 发送 JSON 请求。`delivery.channel` 为必填字段，取值为 `email` 或 `push`。”将请求示例替换为 `{\"delivery\":{\"channel\":\"email\"}}`。成功响应仍使用 `data.channel`，无需修改响应示例。"
+          }
+        ],
+        "checked": [
+          "两个变更文件的完整差异及固定提交中的处理器和测试",
+          "README 指向的集成指南，以及其中的请求和响应示例"
+        ],
+        "limitations": [
+          "未运行 Bun 测试或发送 HTTP 请求；结论来自固定提交中的控制流和测试断言。"
+        ],
+        "excludedInstructionFiles": [],
+        "coverage": {
+          "changedFiles": 2,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:docs/notifications.md",
+            "head:src/notifications.js",
+            "head:tests/notifications.test.js"
+          ],
+          "searches": 1,
+          "toolCalls": 7,
+          "toolErrors": []
+        },
+        "turns": 3,
+        "compactions": 0,
+        "totalTokens": 9858
+      }
+    },
+    {
+      "caseId": "guide-revised",
+      "exitCode": 0,
+      "elapsedMs": 16728,
+      "rawReportSha256": "ce3d8f865615cda46c9b64954bf620b4e54297c21b1902226dc20c572c22f940",
+      "invalidControlCharacters": [],
+      "report": {
+        "role": "comments",
+        "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+        "head": "18743033c06a7f036124c45d54c0edd8b3a99fcb",
+        "requestedModel": "gpt-6.2-sol",
+        "actualModels": [
+          "gpt-6.2-sol"
+        ],
+        "effort": "high",
+        "maxTurns": 10,
+        "toolSets": [
+          "snapshot",
+          "workspace"
+        ],
+        "status": "pass",
+        "summary": "实现、文档和测试对新的 `delivery.channel` 请求格式一致。发现一处非阻塞的文档改进：明确告知现有调用方如何迁移，以及旧格式会收到什么错误。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "docs/notifications.md",
+            "line": 3,
+            "title": "在接入指南中明确旧请求格式的迁移方式",
+            "evidence": "旧版指南示例使用顶层 `channel`，新版指南给出了正确的嵌套格式，但没有明确说明旧格式不再被接受。`src/notifications.js:14–16` 仅读取 `delivery.channel`；`tests/notifications.test.js:13–20` 明确断言原先有效的 `{\"channel\":\"email\"}` 现在返回 HTTP 400 和 `{\"error\":\"invalid_channel\"}`。",
+            "recommendation": "在请求示例后加入迁移说明：如果仍在发送顶层 `channel`，请将其移到 `delivery.channel`。仅提供顶层 `channel` 的请求会返回 HTTP `400`，响应体为 `{\"error\":\"invalid_channel\"}`。成功响应仍使用 `data.channel`。"
+          }
+        ],
+        "checked": [
+          "读完三个变更文件的全部 diff，并比对固定基线和目标版本中的接入指南、处理函数及测试。",
+          "核对 `POST /notifications` 的路由条件、请求字段校验、错误响应和成功响应；检查了 README 中指向接入指南的链接及仓库内的相关引用。"
+        ],
+        "limitations": [
+          "仅做了静态审查，未运行 Bun 测试或发送 HTTP 请求。",
+          "未检查仓库外的调用方或部署安排，无法确认是否有调用方仍在使用旧格式。"
+        ],
+        "excludedInstructionFiles": [],
+        "coverage": {
+          "changedFiles": 3,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:docs/notifications.md",
+            "head:src/notifications.js",
+            "head:tests/notifications.test.js",
+            "base:docs/notifications.md",
+            "base:src/notifications.js",
+            "base:tests/notifications.test.js"
+          ],
+          "searches": 2,
+          "toolCalls": 12,
+          "toolErrors": []
+        },
+        "turns": 4,
+        "compactions": 0,
+        "totalTokens": 16431
+      }
+    },
+    {
+      "caseId": "wording",
+      "exitCode": 0,
+      "elapsedMs": 12135,
+      "rawReportSha256": "60e3ed13bd0b0ef7a1c412e5a2fdc8ce9b292fcfbecccaead818ef26fa3b2d7a",
+      "invalidControlCharacters": [],
+      "report": {
+        "role": "comments",
+        "base": "74f88b377667c30f908eb3f7ae8171a453d3325c",
+        "head": "1e2c1a645f36f29088330f680960de7f186b5ecf",
+        "requestedModel": "gpt-6.2-sol",
+        "actualModels": [
+          "gpt-6.2-sol"
+        ],
+        "effort": "high",
+        "maxTurns": 10,
+        "toolSets": [
+          "snapshot",
+          "workspace"
+        ],
+        "status": "pass",
+        "summary": "成功响应的文档与实现一致；仅有一处可选的措辞改进。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "docs/notifications.md",
+            "line": 11,
+            "title": "合并重复表述，直接指出响应字段",
+            "evidence": "新增句重复说明频道由调用方选择。`src/notifications.js:14–19` 直接将请求中的 `channel` 放入响应的 `data.channel`，现有示例也展示了这一结构。",
+            "recommendation": "将两句合并为：`A successful request returns status 201 and echoes the request's channel in data.channel.` 在 Markdown 中将 `201`、`channel` 和 `data.channel` 标为行内代码。"
+          }
+        ],
+        "checked": [
+          "完整文档差异和 `docs/notifications.md` 中的请求与响应示例",
+          "`src/notifications.js` 中的路由匹配、请求校验与响应结构，以及 `tests/notifications.test.js` 中的成功响应断言",
+          "`README.md` 中指向该集成指南的链接"
+        ],
+        "limitations": [
+          "仅进行了静态核对，未运行测试或验证 Markdown 渲染。"
+        ],
+        "excludedInstructionFiles": [],
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:docs/notifications.md",
+            "head:src/notifications.js",
+            "head:tests/notifications.test.js",
+            "head:README.md"
+          ],
+          "searches": 1,
+          "toolCalls": 6,
+          "toolErrors": []
+        },
+        "turns": 4,
+        "compactions": 0,
+        "totalTokens": 12122
+      }
+    },
+    {
+      "caseId": "mcp-original",
+      "exitCode": 1,
+      "elapsedMs": 87150,
+      "rawReportSha256": "9afb516a5d4528dea28d25279d12c85d0c2e2ce7340579370b24b890df196433",
+      "invalidControlCharacters": [
+        {
+          "index": 0,
+          "field": "recommendation",
+          "codePoints": [
+            "U+001B",
+            "U+001B",
+            "U+001B"
+          ]
+        }
+      ],
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+        "requestedModel": "gpt-6.2-sol",
+        "actualModels": [
+          "gpt-6.2-sol"
+        ],
+        "effort": "high",
+        "maxTurns": 16,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "status": "findings",
+        "summary": "已审阅 README.md 的完整差异。Claude Code 的配置文件名缺少前导点，照着文档操作不会加载服务器；另有四处建议，用于明确客户端配置、版本前提、搜索参数和克隆失败后的恢复方式。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "README.md",
+            "line": 55,
+            "title": "Claude Code 不会加载项目根目录下的 `mcp.json`",
+            "evidence": "新增步骤明确让读者把配置写入 `mcp.json`，但 Claude Code 官方 MCP 文档指定的项目级配置文件是项目根目录下的 `.mcp.json`。配置内容正确也无法弥补文件名错误。",
+            "recommendation": "将这句替换为 `Add to the [U+001B]project root's [U+001B].mcp.json[U+001B] file:`，其中 `.mcp.json` 使用 Markdown 行内代码格式。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 111,
+            "title": "本地构建示例不能原样用于前文所有客户端配置",
+            "evidence": "示例使用顶层 `mcpServers`，但前文给出的 VS Code `.vscode/mcp.json` 使用 `servers`。VS Code 官方配置参考确认，这两种顶层键分别属于不同的配置格式。",
+            "recommendation": "不要将整段 JSON 描述为适用于任意客户端。改为说明保留各客户端小节指定的文件和配置结构，只把 `command` 改为 `node`，把 `args` 改为仅包含 `dist/index.js` 绝对路径的数组。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 13,
+            "title": "Node.js 版本前提低于锁定依赖声明的最低版本",
+            "evidence": "`package.json:28–30` 声明 Node.js ≥ 18，但 `package-lock.json:25–44` 显示 SDK 的锁定依赖 `@hono/node-server@1.19.11` 声明要求 Node.js ≥ 18.14.1。当前说明把不满足该依赖声明的 Node.js 18.0–18.14.0 也列入了范围。",
+            "recommendation": "将最低版本写为 `Node.js ≥ 18.14.1`，以匹配当前锁定依赖的声明；不要将此表述为已验证的运行结果。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 91,
+            "title": "搜索工具表缺少可选的结果数量参数",
+            "evidence": "`src/index.ts:40–55` 声明 `limit` 为可选数值，`src/tools/search_graph_apis.ts:40–41` 在省略或传入非正数时使用 20，随后由 `src/search.ts:67` 截取结果。表格只列出 `query`，读者无从知道如何获取超过默认数量的结果。",
+            "recommendation": "在 Input 列加入可选的 `limit`（number，默认 20）。不要照抄工具 schema 中的最大值 100，因为当前实现没有执行这个上限。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 134,
+            "title": "克隆失败后需要重启，不会在当前进程中自动恢复",
+            "evidence": "“until data is available” 暗示等待即可恢复。`src/index.ts:16–20` 只在启动时调用一次 `loadIndex()`，而 `src/loader.ts:202–224` 在克隆失败时直接返回，没有重试或后台刷新。",
+            "recommendation": "保留服务器仍会启动的说明，将失败后的行为改为 `If the clone fails, the server still starts, but tools report that the data is unavailable. Check the server logs, resolve the cause, and restart the server to retry.`"
+          }
+        ],
+        "checked": [
+          "完整阅读固定提交的 README.md 差异和前后版本；问题行号来自 head 文件。",
+          "对照 package.json、package-lock.json、tsconfig.json、入口点、数据加载流程和五个工具的实现。",
+          "对照 Claude Code 和 VS Code 官方 MCP 配置文档，区分项目级文件名和客户端配置格式。"
+        ],
+        "limitations": [
+          "仅做静态审阅。未执行构建、测试或 `npx`，未验证 GitHub 直装产物是否包含 `dist/index.js`，也未在 Windows 或各 MCP 客户端中验证进程启动与握手。",
+          "未独立确认 GitHub Copilot Coding Agent 仓库设置的当前入口及完整配置 schema；未将这项不确定性列为缺陷。",
+          "未运行 Markdown 渲染或 JSON 解析验证；示例仅做静态检查。"
+        ],
+        "excludedInstructionFiles": [],
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/loader.ts",
+            "head:src/index.ts",
+            "head:tsconfig.json",
+            "head:src/tools/get_server_info.ts",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/search_graph_apis.ts",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:package-lock.json",
+            "head:src/search.ts",
+            "base:README.md",
+            "head:.gitignore"
+          ],
+          "searches": 2,
+          "toolCalls": 38,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers.md\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404"
+          ]
+        },
+        "turns": 12,
+        "compactions": 0,
+        "totalTokens": 415414
+      }
+    },
+    {
+      "caseId": "mcp-restart-doc",
+      "exitCode": 1,
+      "elapsedMs": 81725,
+      "rawReportSha256": "b5da67e5705d50df6085bfba38ec48cb99794ced8cb124a81388a202771acc4e",
+      "invalidControlCharacters": [
+        {
+          "index": 0,
+          "field": "recommendation",
+          "codePoints": [
+            "U+001B"
+          ]
+        }
+      ],
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "9c4c029a556a0e26389dc1b385d900c46acb023d",
+        "requestedModel": "gpt-6.2-sol",
+        "actualModels": [
+          "gpt-6.2-sol"
+        ],
+        "effort": "high",
+        "maxTurns": 16,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "status": "findings",
+        "summary": "已审阅 README.md 的完整差异。Claude Code 示例给出的文件名会导致配置不被加载；本地构建示例、搜索参数和启动降级说明也有几处需要澄清。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "README.md",
+            "line": 55,
+            "title": "Claude Code 项目配置文件名缺少前导点",
+            "evidence": "README 要求编辑项目的 `mcp.json`，但 [Claude Code 官方配置指南](https://code.claude.com/docs/en/mcp-quickstart.md#edit-mcp-json-directly) 指定项目根目录下的 `.mcp.json`。照当前说明创建文件，Claude Code 不会加载此服务器。",
+            "recommendation": "将该句替换为 `Add the following to [U+001B]` 所表达的完整说明：将配置添加到项目根目录的 `.mcp.json`；保留现有 JSON 示例。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 111,
+            "title": "不要把本地构建的 JSON 示例称为适用于任意 MCP 客户端",
+            "evidence": "该示例使用顶层 `mcpServers`，但本文第 21–32 行的 VS Code 编辑器配置使用顶层 `servers`，GitHub Copilot 仓库配置还要求 `type` 和 `tools`。`src/index.ts:193–194` 只建立 stdio 传输，不决定客户端的配置格式。",
+            "recommendation": "保留示例，但将引导语改为：`In your client's configuration above, replace the launch command with node and set its arguments to the absolute path to dist/index.js. The example below uses Claude's mcpServers format.`"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 91,
+            "title": "补充搜索结果数量参数及默认值",
+            "evidence": "`src/index.ts:40–55` 将 `query` 声明为必填、`limit` 声明为可选数字；`src/tools/search_graph_apis.ts:40–41` 在未提供正数时使用 20。处理器没有执行工具描述所称的 100 条上限。",
+            "recommendation": "将输入列改为 `query`（必填字符串）、`limit`（可选数字；未提供正数时默认 20）。不要在 README 中写入实现未强制执行的 100 条上限。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 128,
+            "title": "说明版本查询回退与克隆失败是不同情况",
+            "evidence": "`src/loader.ts:106–130` 在无法解析最新发布标签时改为克隆默认分支。若克隆本身失败，`src/loader.ts:208–223,261–266` 不会设置缓存索引；`src/index.ts:19,120,193–194` 仍启动 stdio 服务，数据工具报告数据不可用，`src/tools/get_server_info.ts:14–23` 返回 `degraded`。",
+            "recommendation": "将第 128 行改为：`At startup, the server clones the latest release tag from merill/msgraph, or the default branch if it cannot resolve the tag, and indexes the files below.` 在第 134 行用“数据工具报告数据不可用，`get_server_info` 返回 `degraded`”替换“starts with an empty index”，保留重启后重试的说明。"
+          }
+        ],
+        "checked": [
+          "完整读取了固定差异的两页，并通过固定 head 的 README.md 核对了问题行号。",
+          "对照了包入口、构建脚本、TypeScript 输出目录、工具注册与处理器、数据加载和回退流程。",
+          "查阅了 Claude Code、VS Code、GitHub Copilot 和 npm 的公开配置文档。"
+        ],
+        "limitations": [
+          "未执行构建、安装、客户端启动或 JSON 校验；客户端示例仅做静态审阅。",
+          "没有适用 npm 版本下 Git 安装路径的实际打包清单或启动结果。仍需确认 `prepare` 后的安装产物同时包含 `dist/index.js` 及其依赖的其他编译模块，并能完成 MCP 初始化；未将此不确定性判定为安装故障。",
+          "未在原生 Windows 上验证 Claude Desktop 对 `npx` 的启动行为，也未实测首次索引对应的上游端点数量。"
+        ],
+        "excludedInstructionFiles": [],
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/index.ts",
+            "head:src/loader.ts",
+            "head:src/search.ts",
+            "head:tsconfig.json",
+            "head:.gitignore",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:src/tools/search_graph_apis.ts",
+            "head:src/tools/get_server_info.ts",
+            "base:README.md",
+            "head:package-lock.json"
+          ],
+          "searches": 1,
+          "toolCalls": 43,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/agents/copilot-coding-agent/extending-copilot-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.npmjs.com/cli/v10/configuring-npm/package-json\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.npmjs.com/cli/v11/configuring-npm/package-json\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers.md\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/concepts/agents/cloud-agent/mcp-and-cloud-agent\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers.mdx\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers-legacy.md\". For more information, pass `verbose: true` in the second argument to fetch()"
+          ]
+        },
+        "turns": 10,
+        "compactions": 0,
+        "totalTokens": 274085
+      }
+    }
+  ]
+}

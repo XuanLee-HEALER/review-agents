@@ -1,0 +1,71 @@
+From 381bdda6bc8e1c406050876c5609dcf8e48aff9e Mon Sep 17 00:00:00 2001
+From: Evaluation fixture <fixture@example.invalid>
+Date: Wed, 11 Nov 2026 13:31:24 +0800
+Subject: [PATCH] Snapshot revision
+
+---
+ main.js                | 5 +++++
+ scripts/export-tags.js | 9 +++++++--
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/main.js b/main.js
+index 8b394a6..ce0c040 100644
+--- a/main.js
++++ b/main.js
+@@ -296,6 +296,7 @@ const fetchHubItems = async (repoType) => {
+         }
+         let hfItems = await response.json();
+ 
++        const additionalFullIds = new Set();
+         // Fetch additional HF repos of this type from outside the org
+         const additionalForType = ADDITIONAL_HF_REPOS.filter(entry => entry.type === repoType);
+         if (additionalForType.length) {
+@@ -323,12 +324,16 @@ const fetchHubItems = async (repoType) => {
+                         })
+                 )
+             );
++            for (const item of fetched) {
++                if (item && !existingIds.has(item.id)) additionalFullIds.add(item.id);
++            }
+             hfItems = [...hfItems, ...fetched.filter(item => item && !existingIds.has(item.id))];
+         }
+ 
+         // Step 2: If we are fetching models, get the full details for each one.
+         if (repoType === 'models') {
+             const detailPromises = hfItems.map(item =>
++                additionalFullIds.has(item.id) ? Promise.resolve(item) :
+                 fetch(`${API_BASE_URL}models/${item.id}`).then(res => {
+                     if (!res.ok) {
+                         console.error(`Failed to fetch details for ${item.id}`);
+diff --git a/scripts/export-tags.js b/scripts/export-tags.js
+index 617fd82..aee9d0b 100644
+--- a/scripts/export-tags.js
++++ b/scripts/export-tags.js
+@@ -119,7 +119,8 @@ const collectHFTags = async (repoType) => {
+     console.log(`Fetching HF ${repoType}...`);
+     let items = (await get(`${API_BASE_URL}${repoType}?author=${ORGANIZATION_NAME}&full=true`)).json;
+ 
+-    // Fetch additional HF repos of this type
++    const additionalFullIds = new Set();
++        // Fetch additional HF repos of this type
+     const additionalForType = ADDITIONAL_HF_REPOS.filter(entry => entry.type === repoType);
+     if (additionalForType.length) {
+         const existingIds = new Set(items.map(item => item.id));
+@@ -136,12 +137,16 @@ const collectHFTags = async (repoType) => {
+                     .catch(() => null)
+             )
+         );
+-        items = [...items, ...fetched.filter(item => item && !existingIds.has(item.id))];
++        for (const item of fetched) {
++                if (item && !existingIds.has(item.id)) additionalFullIds.add(item.id);
++            }
++            items = [...items, ...fetched.filter(item => item && !existingIds.has(item.id))];
+     }
+ 
+     if (repoType === 'models') {
+         const details = await Promise.all(
+             items.map(item =>
++                additionalFullIds.has(item.id) ? Promise.resolve(item) :
+                 fetch(`${API_BASE_URL}models/${item.id}`)
+                     .then(r => r.ok ? r.json() : null)
+                     .catch(() => null)

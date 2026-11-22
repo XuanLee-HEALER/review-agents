@@ -1,0 +1,25 @@
+From ac7e37f323ff31c591a8d9da597bfeac1a2b0580 Mon Sep 17 00:00:00 2001
+From: Evaluation fixture <fixture@example.invalid>
+Date: Wed, 11 Nov 2026 13:31:24 +0800
+Subject: [PATCH] Snapshot revision
+
+---
+ scripts/export-tags.js | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/scripts/export-tags.js b/scripts/export-tags.js
+index 617fd82..be28f26 100644
+--- a/scripts/export-tags.js
++++ b/scripts/export-tags.js
+@@ -133,7 +133,10 @@ const collectHFTags = async (repoType) => {
+             toFetch.map(entry =>
+                 get(`${API_BASE_URL}${repoType}/${entry.repo}`)
+                     .then(({ json }) => json)
+-                    .catch(() => null)
++                    .catch(err => {
++                        console.warn(`Failed to fetch additional HF repo "${entry.repo}":`, err);
++                        return null;
++                    })
+             )
+         );
+         items = [...items, ...fetched.filter(item => item && !existingIds.has(item.id))];

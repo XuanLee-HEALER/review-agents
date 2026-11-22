@@ -1,0 +1,1182 @@
+{
+  "date": "2026-11-18",
+  "purpose": "Same-runtime paired GPT-6.2 Sol calibration of the two independent advisory roles.",
+  "configuration": {
+    "model": "gpt-6.2-sol",
+    "effort": "high",
+    "maxTurns": 30,
+    "compactThreshold": 120000,
+    "toolSets": [
+      "snapshot",
+      "workspace",
+      "web"
+    ],
+    "freshTaskPerRun": true
+  },
+  "promptRevisions": {
+    "baseline": {
+      "performance": {
+        "path": "evals/fixtures/advisory-replay-20261118-prompts/performance-before.md",
+        "sha256": "a1ded5066b29dbf81a42ea3fb27463d89ad2bc82fd9f3d8a61d065a6607a8ea5"
+      },
+      "simplify": {
+        "path": "evals/fixtures/advisory-replay-20261118-prompts/simplify-before.md",
+        "sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82"
+      }
+    },
+    "performance_candidate": {
+      "performance": {
+        "path": "prompts/performance.md",
+        "sha256": "89ca06f36a45d2f74c839f27b8f398c29de004ca1f37989b306ccba0a0b5dbdb"
+      }
+    },
+    "simplify_first_candidate": {
+      "simplify": {
+        "path": "evals/fixtures/advisory-replay-20261118-prompts/simplify-first-candidate.md",
+        "sha256": "734cf71326458c9cae0a0035dd9154792ae2fd8f1fc6fd3c595dcf96bc3fcc2b"
+      }
+    },
+    "simplify_second_candidate": {
+      "simplify": {
+        "path": "prompts/simplify.md",
+        "sha256": "95733596a857e3c03d9c145b6c9067bf4977a4d1b9647c2496b16e25be2e0467"
+      }
+    }
+  },
+  "selected": {
+    "performance": "performance_candidate",
+    "simplify": "simplify_second_candidate"
+  },
+  "runtimeHashes": {
+    "package.json": "c0d2a794cff666169714524c58a4c733580130920ad9f562bda9212ef35b298e",
+    "bun.lock": "98ffc43daadda94a08ea20a889ffab200e9341b04ce5167094c826b3091f19bf",
+    "src/api-error.ts": "482c1b7f7cdd804346a3ccea508d13b84d5f6c61732d02b200a6a2a4c8a96df8",
+    "src/comments.ts": "e5a3d60c50765a6bbaca60e358c2dd8024411483b58f22a926a29ddf0a48536b",
+    "src/config.ts": "06793c7796d646a364260f597f46fcaec8263ad4a2a4e40c952c05b0e39731c2",
+    "src/context-tools.ts": "37896cc11a46bb71b832a8c55d2b4319bb2a4b6b84361c34f16bdb3cd72f764c",
+    "src/model-config.ts": "9c51a0b7a62564c0d569ede9933b0412c9c505da09d5dfac01664eda2aa03370",
+    "src/performance.ts": "2782ed4348ec5537ce3b12dca01e7e9a56f3eeef589de169f3647c6e337516fb",
+    "src/quality.ts": "8442d737dceb14606127ad67a96a77ddd96556ca46a4bd939fe28e92c71e2a1b",
+    "src/repo.ts": "f8b7edbc82eb2f4b2d2d44af83556a83f56dd1aa3d2c22b33a7b468ec00a593d",
+    "src/report.ts": "2f41774d98de5b1a3d42a71dc8ec01df97ea18457ab768631403a91cfa320f5d",
+    "src/runner.ts": "95f231a9ddc5b21a12a36eb4ce1325cfc2c405da18d40da1f11061dce8e00241",
+    "src/simplify.ts": "b97e091220d632cd1205d44a9571fa3a29980e08b418e1194fa753468c6ecf6a",
+    "src/task.ts": "33152991f59b3edb2a313aed0d750a5acc56017f62faa6f59745e4c04a5c2b93",
+    "src/tasks.ts": "cc1874166451d5c48f9f341b26fe82b612ac7b112402b911d4e9492d365fc92a"
+  },
+  "fixtureScriptSha256": "6c307258a7d7db1e4a16ce7578c19e4a84031d5cde063db3563f79967cf4981c",
+  "historicalContext": "Earlier live 6.2 baseline and frozen v4 comparison remain recorded in the workbench audit. The earlier 6.2 catalog positive blocked, its repaired control blocked for serial waits and authentication, and wallet missed the local conversion. This evaluation reran the original prompts on the same runtime as both candidates.",
+  "selectionEvidence": [
+    "Performance preserved the duplicate-request target while improving severity on the catalog positive. In the repaired catalog, the technically separate serial wait remained a suggestion. The proven quota failure remained blocking in both path series. Both directory controls produced no findings.",
+    "Simplify recovered the previously missed local conversion without resurrecting it on the repaired head. Both candidates recommended removing only same-layer duplicates in the synthetic positive and preserved all three independent test contracts on the negative.",
+    "The first simplify candidate was not selected because of its tool and token cost. The second candidate bounds evidence gathering to facts that can change a decision, and was verified on the same four samples. The original wallet prompt was less expensive on the positive but missed the local cause. Cost changed in both directions across runs."
+  ],
+  "independentVerification": {
+    "reviewAgents": {
+      "typecheck": "bun run check passed",
+      "test": "bun test passed 26 tests with 0 failures",
+      "build": "bun run build passed",
+      "runtimeTestsAddedForPromptWording": 0
+    },
+    "directory": {
+      "positive": "bun test deterministically failed with directory quota exhausted for the existing 200-record test",
+      "repaired": "bun test passed the same test after one lookup replaced the repeated path",
+      "negative": "bun test passed both tests, including distinct classifications for records with identical text"
+    },
+    "invoice": {
+      "duplicatesPresent": "go test ./... passed; local Hurl passed 2 files and 3 requests",
+      "duplicatesAbsent": "go test ./... passed; local Hurl passed 1 file and 2 requests",
+      "isolatedPerturbations": [
+        {
+          "changed": "pure calculation rounding at 1025 cents",
+          "unit": "fail",
+          "integration": "pass",
+          "Hurl": "pass"
+        },
+        {
+          "changed": "discount loaded from disk",
+          "unit": "pass",
+          "integration": "fail",
+          "Hurl": "pass"
+        },
+        {
+          "changed": "HTTP Content-Type header",
+          "unit": "pass",
+          "integration": "pass",
+          "Hurl": "fail"
+        }
+      ]
+    },
+    "localConversion": "A standalone Go probe compared byte content and nil-ness for both hex expressions over nil, empty, mixed and over-64-byte inputs, including the bounded prefix. All eight comparisons passed.",
+    "productionOrFatUsed": false
+  },
+  "limits": [
+    "Named runs initially included case names such as positive, repaired and negative in the reviewer-visible path metadata. The neutral series used random repository and task aliases with benchmark labels outside the working directory. The five synthetic cases were new to the initial run; the neutral series was a repeat, not a new dataset.",
+    "Adjudication inspected source or fixtures against frozen case criteria. This was a focused manual comparison with known archived results, not statistically powered double-blind scoring.",
+    "A single stochastic model was tested at high effort. Distinct timings include parallel work and provider latency. Token totals include provider-reported context and compaction usage and are not billed currency. Tool errors are retained where observed.",
+    "Review CLIs did not run tests or edit review targets. The independent probes exercised only local synthetic fixtures or the standalone hex expression. Full upstream application suites and runtime catalog performance were not measured.",
+    "Sanitized results retain public source locations, prompt/runtime hashes and report digests. Raw prompts with runtime metadata, logs, task transcripts, absolute local paths and provider credentials are outside this artifact."
+  ],
+  "aggregates": {
+    "baseline/performance/named": {
+      "completed": 5,
+      "totalTokens": 582380,
+      "summedDurationMs": 193744,
+      "toolErrorCount": 2
+    },
+    "performance_candidate/performance/named": {
+      "completed": 5,
+      "totalTokens": 682331,
+      "summedDurationMs": 196157,
+      "toolErrorCount": 1
+    },
+    "baseline/simplify/named": {
+      "completed": 4,
+      "totalTokens": 1262456,
+      "summedDurationMs": 325793,
+      "toolErrorCount": 1
+    },
+    "simplify_first_candidate/simplify/named": {
+      "completed": 4,
+      "totalTokens": 2394589,
+      "summedDurationMs": 567836,
+      "toolErrorCount": 3
+    },
+    "simplify_second_candidate/simplify/named": {
+      "completed": 4,
+      "totalTokens": 1398901,
+      "summedDurationMs": 372226,
+      "toolErrorCount": 2
+    },
+    "baseline/performance/neutral": {
+      "completed": 3,
+      "totalTokens": 30574,
+      "summedDurationMs": 45195,
+      "toolErrorCount": 0
+    },
+    "performance_candidate/performance/neutral": {
+      "completed": 3,
+      "totalTokens": 38023,
+      "summedDurationMs": 57484,
+      "toolErrorCount": 0
+    },
+    "baseline/simplify/neutral": {
+      "completed": 2,
+      "totalTokens": 182925,
+      "summedDurationMs": 71452,
+      "toolErrorCount": 1
+    },
+    "simplify_second_candidate/simplify/neutral": {
+      "completed": 2,
+      "totalTokens": 256016,
+      "summedDurationMs": 71932,
+      "toolErrorCount": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "catalog",
+      "role": "performance",
+      "source": "Imageomics/catalog",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "criteria": {
+        "positive": "Identify a second detail request for successfully fetched configured external models and anchor it in the changed browser or scheduled export path.",
+        "severity": "Suggestion for the extra detail requests and serial batch ordering unless the report shows independently verified substantial impact in representative supported use. The shipped configuration has an empty additional list.",
+        "negative": "Reject unrelated findings on credentials and configuration migration."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "findings",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 1,
+          "turns": 9,
+          "totalTokens": 300943,
+          "durationMs": 70200,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 1,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "11829489d33c640eadb66f934600a8d6420c91e2136ecaed7779f44710dac821",
+          "findings": [
+            {
+              "severity": "blocking",
+              "path": "main.js",
+              "line": 326,
+              "title": "复用已取得的外部模型详情，避免二次请求"
+            }
+          ],
+          "adjudication": "Matched the repeated details request but made it blocking. The shipped empty list, enabled-path reachability, and static request counts do not alone show material degradation."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 115102,
+          "durationMs": 41655,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "3938de38ee0b34ce3679ecad147b0a3c4f78de9267565c086e1506a7f4808272",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "main.js",
+              "line": 326,
+              "title": "复用已获取的外部模型详情，避免重复请求"
+            }
+          ],
+          "adjudication": "Matched the browser and scheduled export cause as one suggestion, citing the opt-in path and limits of static timing evidence."
+        }
+      ]
+    },
+    {
+      "id": "catalog-repaired",
+      "role": "performance",
+      "source": "Imageomics/catalog repaired control",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+      "criteria": {
+        "negative": "Do not repeat the duplicate external detail request. Separate any proved serial wait from that repaired cause; severity threshold unchanged. Exclude credentials and compatibility findings."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 8,
+          "totalTokens": 248180,
+          "durationMs": 76329,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 2,
+          "remainingDiffCount": 0,
+          "reportSha256": "1f8a99ffb35250554c65f73e2f9a1f4a8fbfb4ae22ebcf3343fcc4f9bb9a7836",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "main.js",
+              "line": 311,
+              "title": "不要等补充模型全部返回后才请求组织模型详情"
+            },
+            {
+              "severity": "suggestion",
+              "path": "main.js",
+              "line": 330,
+              "title": "合并补充仓库时用返回的 ID 做一次去重"
+            }
+          ],
+          "adjudication": "No recurrence. Serial waits were a separate suggestion. The second suggestion assumed possible alias or redirect behavior, which was not established by the pinned repository."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 14,
+          "totalTokens": 531456,
+          "durationMs": 106769,
+          "compactions": 1,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 0,
+          "toolErrorCount": 1,
+          "remainingDiffCount": 0,
+          "reportSha256": "5375b4e579938613684b39384011addccb6dcc76bbe5a23f3dbd0576dde7d393",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "main.js",
+              "line": 311,
+              "title": "不要等外部模型详情全部返回后才请求组织模型详情"
+            }
+          ],
+          "adjudication": "No recurrence or unrelated finding. Reported independent serial waits as a suggestion with the default empty configuration and no timing measurements."
+        }
+      ]
+    },
+    {
+      "id": "wallet",
+      "role": "simplify",
+      "source": "sirosfoundation/go-wallet-backend",
+      "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+      "head": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+      "criteria": {
+        "positive": "Identify the independently removable string-to-byte conversions in the two changed logger fields and propose a rendered-equivalent string field. A debug-level guard alone misses the frozen target.",
+        "severity": "Suggestion on the registration-verification failure path.",
+        "negative": "Reject a standalone configuration comment rewrite as out of the simplify role."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 12,
+          "totalTokens": 444891,
+          "durationMs": 105192,
+          "compactions": 1,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "4702203903a4c522b355ff3a70b8ef9d7ae3e88b8404b0773bda996d06c73031",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 522,
+              "title": "仅在启用 Debug 时遍历并编码证明数据"
+            },
+            {
+              "severity": "suggestion",
+              "path": "pkg/config/config.go",
+              "line": 425,
+              "title": "在 getter 注释中说明回退语义，不重复配置建议"
+            }
+          ],
+          "adjudication": "Missed both local string-to-byte conversions. The Debug guard suppresses work only while Debug is disabled. The other suggestion changes a configuration comment outside this role."
+        },
+        {
+          "variant": "simplify_first_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 19,
+          "totalTokens": 872022,
+          "durationMs": 200136,
+          "compactions": 2,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "442f244f3268db74093a6a951c9a5851888f2a1742777b005a430cda7ba3930d",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 520,
+              "title": "仅在启用 Debug 时组装认证证明诊断数据"
+            },
+            {
+              "severity": "suggestion",
+              "path": "go.mod",
+              "line": 9,
+              "title": "把公钥持久化断言并入现有 ECDSA 注册测试"
+            }
+          ],
+          "adjudication": "Matched both local conversions as a suggestion alongside a separate Debug guard. The remedy directly encodes into bytes with the same Zap field type and rendered result."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 15,
+          "totalTokens": 591598,
+          "durationMs": 155221,
+          "compactions": 1,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 1,
+          "remainingDiffCount": 0,
+          "reportSha256": "c2612806ffa1841581b097702ffa88543932e1d80ba6f5496d9526347b49b83e",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 520,
+              "title": "仅在启用 Debug 时生成证明诊断，并直接编码十六进制"
+            },
+            {
+              "severity": "suggestion",
+              "path": "go.mod",
+              "line": 9,
+              "title": "把重复的 ECDSA 注册用例合并到完整注册测试"
+            }
+          ],
+          "adjudication": "Matched both local conversions and distinguished them from the Debug guard's path condition. Proposed the same equivalent bytes remedy and preserved the error and log output contract. The separate test-consolidation suggestion references an affected dependency and retains the public-key assertion."
+        }
+      ]
+    },
+    {
+      "id": "wallet-repaired",
+      "role": "simplify",
+      "source": "sirosfoundation/go-wallet-backend repaired control",
+      "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+      "head": "56f12e5a58156e62daa1846ccf3062f05a3a7741",
+      "criteria": {
+        "negative": "Do not re-report the removed representation conversions. Allow separately supported, behavior-equivalent simplifications."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 17,
+          "totalTokens": 671575,
+          "durationMs": 141026,
+          "compactions": 1,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "7ee9e3c84826569adf10389134c1a34f421e03bd268d0eacf054c2c125cce969",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 536,
+              "title": "用 Zap 的二进制字段替代手工 Base64 编码"
+            },
+            {
+              "severity": "suggestion",
+              "path": "pkg/config/config.go",
+              "line": 426,
+              "title": "让 getter 注释只说明回退规则"
+            }
+          ],
+          "adjudication": "No recurrence. A binary-field suggestion concerned Base64, not the removed hexadecimal string-to-byte conversion. The other suggestion changes a standalone configuration comment."
+        },
+        {
+          "variant": "simplify_first_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 21,
+          "totalTokens": 1015417,
+          "durationMs": 238996,
+          "compactions": 2,
+          "errorCode": null,
+          "findingCount": 3,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "be3feb7e35195ba76a172fac1d86cd296310e4e574f4588a092132e724ca319f",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 520,
+              "title": "只在启用 Debug 时生成 attestation 诊断"
+            },
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 500,
+              "title": "直接解析已规范化的凭据 JSON"
+            },
+            {
+              "severity": "suggestion",
+              "path": "go.mod",
+              "line": 9,
+              "title": "把名为 BER 回归的重复用例并入普通 EC2 注册测试"
+            }
+          ],
+          "adjudication": "No recurrence. The optional specialized string hex encoder in an existing string field does not reassert a removed bytes conversion. Other suggestions concern guards, normalization, and a service-test consolidation."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 17,
+          "totalTokens": 756051,
+          "durationMs": 168710,
+          "compactions": 1,
+          "errorCode": null,
+          "findingCount": 3,
+          "blockerCount": 0,
+          "toolErrorCount": 1,
+          "remainingDiffCount": 0,
+          "reportSha256": "802456d2008aaab4dd8576cf86c68ec1edf29d8ecbb42e3f32e8797befae8af5",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 522,
+              "title": "只在启用调试日志时构造证明诊断数据"
+            },
+            {
+              "severity": "suggestion",
+              "path": "internal/service/webauthn.go",
+              "line": 500,
+              "title": "让日志预览与凭据解析复用同一次解码"
+            },
+            {
+              "severity": "suggestion",
+              "path": "go.mod",
+              "line": 9,
+              "title": "将依赖升级的普通 EC2 注册检查合并到现有流程测试"
+            }
+          ],
+          "adjudication": "No recurrence of the removed local conversion. Remaining optional findings are not evidence of recurrence."
+        }
+      ]
+    },
+    {
+      "id": "directory-positive",
+      "role": "performance",
+      "source": "evals/fixtures/advisory-replay-20261118.sh",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "f19b7cbd789abaa7a2d816d4da1ef15051df7015",
+      "criteria": {
+        "positive": "Connect reachable exports of >64 and <=200 records with identical team lookups and the fixed 64-call quota. Explain abort and preserve empty-report behavior when hoisting.",
+        "severity": "Blocking for a deterministically failing supported workload."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "findings",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 1,
+          "turns": 5,
+          "totalTokens": 13814,
+          "durationMs": 16476,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 1,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "8a30cf4e8d898b9ca7b0c8b56a4e48ba3ca53f7a5ba7e5d0d0e9effbb3ea1c93",
+          "findings": [
+            {
+              "severity": "blocking",
+              "path": "render.js",
+              "line": 11,
+              "title": "逐行查询同一个团队会耗尽目录配额"
+            }
+          ],
+          "adjudication": "Matched the per-row same-team call as blocking. The 65th lookup fails for supported input under the fixed quota."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "named",
+          "status": "findings",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 1,
+          "turns": 4,
+          "totalTokens": 10671,
+          "durationMs": 15069,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 1,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "cd61d33fe288bb83ba1bfa415d3004de3d302374646962685066cdba7b34ff18",
+          "findings": [
+            {
+              "severity": "blocking",
+              "path": "render.js",
+              "line": 11,
+              "title": "在循环外只查询一次团队名称"
+            }
+          ],
+          "adjudication": "Matched the hard quota failure as blocking and preserved source order and zero lookups for empty reports."
+        },
+        {
+          "variant": "baseline",
+          "workspace": "neutral",
+          "status": "findings",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 1,
+          "turns": 4,
+          "totalTokens": 10355,
+          "durationMs": 14541,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 1,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "a551994a963550ecd28a20b5e273ddadb1c83c56b6576c2af1ef0016bb0c7cdf",
+          "findings": [
+            {
+              "severity": "blocking",
+              "path": "render.js",
+              "line": 11,
+              "title": "重复查询团队名称导致第 65 行渲染失败"
+            }
+          ],
+          "adjudication": "Matched the per-row same-team call as blocking. The 65th lookup fails for supported input under the fixed quota."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "neutral",
+          "status": "findings",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 1,
+          "turns": 4,
+          "totalTokens": 11045,
+          "durationMs": 15329,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 1,
+          "blockerCount": 1,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "dda77214106a3d32b3517c1292ca8a475ead304741f35dd760ccbfe6a7001bd7",
+          "findings": [
+            {
+              "severity": "blocking",
+              "path": "render.js",
+              "line": 11,
+              "title": "将同一团队的目录查询移出逐行循环"
+            }
+          ],
+          "adjudication": "Matched the hard quota failure as blocking and preserved source order and zero lookups for empty reports."
+        }
+      ]
+    },
+    {
+      "id": "directory-repaired",
+      "role": "performance",
+      "source": "evals/fixtures/advisory-replay-20261118.sh",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "6f52537ba6b88d3ca1b2945690ead31a168419bf",
+      "criteria": {
+        "negative": "Do not re-report the removed repeated lookup or demand work on an empty report."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 10234,
+          "durationMs": 14123,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "48e12591d649df18a21d99082a980b325554fe601e7eacedb2c1eb739eeb3346",
+          "findings": [],
+          "adjudication": "No recurrence and no finding after the identical lookup was hoisted."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 10686,
+          "durationMs": 13292,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "97057750c54af70de897276b8a05cc2db0b9ef11700739ef00820abc28bf08a8",
+          "findings": [],
+          "adjudication": "No recurrence and no finding after the identical lookup was hoisted."
+        },
+        {
+          "variant": "baseline",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 11057,
+          "durationMs": 15293,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "fbe24d3ac7bf7e73fedf0f7a438a8d10788fe4d13544d5feed2e70e20e581516",
+          "findings": [],
+          "adjudication": "No recurrence and no finding after the identical lookup was hoisted."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 10706,
+          "durationMs": 12628,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "2241594bb6a72f12e6ee83e4d4d9105d28653fe7067a68b0d870674145e80f04",
+          "findings": [],
+          "adjudication": "No recurrence and no finding after the identical lookup was hoisted."
+        }
+      ]
+    },
+    {
+      "id": "directory-negative",
+      "role": "performance",
+      "source": "evals/fixtures/advisory-replay-20261118.sh",
+      "base": "4f7815d2aa65f6e751863116e85ed25f7b303309",
+      "head": "638d47fa947467a575bdb1af5c5c0b70a519b349",
+      "criteria": {
+        "negative": "Do not call distinct per-row classifications redundant or blocking merely because the lookups are serial. Recognize the 16-row cap, 64-call budget and distinct results if discussing the path."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 3,
+          "totalTokens": 9209,
+          "durationMs": 16616,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "da8fa13324003ce7878e210304123d8d0da44d040db44ed36256f78e2237a2d5",
+          "findings": [],
+          "adjudication": "No finding. The classified preview requires distinct row-dependent results under the cap."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 14416,
+          "durationMs": 19372,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "4f93ed2504e04130327e993b4e16564b5ffdbb65a7ffaca9680a5ce2718a20fd",
+          "findings": [],
+          "adjudication": "No finding. The 16-row limit keeps calls below the 64-call budget, and the per-row lookup protects independent classifications."
+        },
+        {
+          "variant": "baseline",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 3,
+          "totalTokens": 9162,
+          "durationMs": 15361,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "b30711b5a09b9397010709b1cb7e2e5ac01f7981af9f36c5ffa4a8c2387f2faa",
+          "findings": [],
+          "adjudication": "No finding. The classified preview requires distinct row-dependent results under the cap."
+        },
+        {
+          "variant": "performance_candidate",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 16272,
+          "durationMs": 29527,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "a75ed53f9f891c0d7ddf349b398a73e2f2ac3724945d54c9ed6f292fa6a7e250",
+          "findings": [],
+          "adjudication": "No finding. The 16-row limit keeps calls below the 64-call budget, and the per-row lookup protects independent classifications."
+        }
+      ]
+    },
+    {
+      "id": "invoice-positive",
+      "role": "simplify",
+      "source": "evals/fixtures/advisory-replay-20261118.sh",
+      "base": "babc4a0aa63fc44f0d849e38200905009a26a4fa",
+      "head": "f04cf486b91b3fa48702f51c0f6dd17bb14f91f4",
+      "criteria": {
+        "positive": "Identify that the minimum subtotal unit assertion duplicates the existing table entry, and that the new Hurl GET success subset duplicates another same-layer public HTTP test.",
+        "negative": "Preserve the persistence/codec round trip and independent public GET/HTTP status, response body and invalid-input behavior. Do not prescribe removing them because outcomes happen to match pure logic.",
+        "severity": "Suggestion for duplicates. Record covered test contracts for retention decisions."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 64814,
+          "durationMs": 40517,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "85288e444bae8b38e38ab4dfcfac5eaeb31af7cbc4ac21299b42309ccc18c916",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "api/invoice_minimum.hurl",
+              "line": 1,
+              "title": "删除重复的 HTTP 折扣门槛用例"
+            },
+            {
+              "severity": "suggestion",
+              "path": "discount_threshold_test.go",
+              "line": 5,
+              "title": "复用已有表驱动测试中的门槛用例"
+            }
+          ],
+          "adjudication": "Found both same-layer duplicates as suggestions. Kept the existing unit table, complete Hurl and temporary-file round trip."
+        },
+        {
+          "variant": "simplify_first_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 10,
+          "totalTokens": 288409,
+          "durationMs": 72292,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 3,
+          "remainingDiffCount": 0,
+          "reportSha256": "78d2c2bdb7b3d52653941177269b551c98ce326a7e6b26820d376e81791b281d",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "api/invoice_minimum.hurl",
+              "line": 1,
+              "title": "删除重复的最低金额 HTTP 请求"
+            },
+            {
+              "severity": "suggestion",
+              "path": "discount_threshold_test.go",
+              "line": 5,
+              "title": "删除已由表驱动测试覆盖的阈值单测"
+            }
+          ],
+          "adjudication": "Found both same-layer duplicates as suggestions and identified the independent pure calculation, persistence and HTTP response contracts."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 39656,
+          "durationMs": 33341,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "f6e99fedfec24f77ccba3f07fa8f2cd07fec55da2ded006d1fb2f317393fde2c",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "api/invoice_minimum.hurl",
+              "line": 1,
+              "title": "删除重复的最低金额 HTTP 用例"
+            },
+            {
+              "severity": "suggestion",
+              "path": "discount_threshold_test.go",
+              "line": 5,
+              "title": "删除重复的折扣阈值单测"
+            }
+          ],
+          "adjudication": "Found both same-layer duplicates as suggestions. Named a remaining case for each deletion and explicitly kept unit calculation, file/codec persistence and Hurl routing/response/error coverage."
+        },
+        {
+          "variant": "baseline",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 77555,
+          "durationMs": 33337,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "e319d845d91950748cd3b687e03b037793c58894f7eb5cbd7dca79e7daba11c8",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "api/invoice_minimum.hurl",
+              "line": 1,
+              "title": "删除重复的最低门槛 HTTP 用例"
+            },
+            {
+              "severity": "suggestion",
+              "path": "discount_threshold_test.go",
+              "line": 6,
+              "title": "复用现有表驱动测试中的门槛用例"
+            }
+          ],
+          "adjudication": "Found both same-layer duplicates as suggestions. Kept the existing unit table, complete Hurl and temporary-file round trip."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 10,
+          "totalTokens": 237173,
+          "durationMs": 52594,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 2,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "4dfb0088990aac6d7a1037e2065c5f68aab5f7ec81674909832dea36f8758fad",
+          "findings": [
+            {
+              "severity": "suggestion",
+              "path": "api/invoice_minimum.hurl",
+              "line": 4,
+              "title": "删除重复的最低金额 HTTP 用例"
+            },
+            {
+              "severity": "suggestion",
+              "path": "discount_threshold_test.go",
+              "line": 6,
+              "title": "复用现有表驱动测试中的折扣边界用例"
+            }
+          ],
+          "adjudication": "Found both same-layer duplicates as suggestions. Named a remaining case for each deletion and explicitly kept unit calculation, file/codec persistence and Hurl routing/response/error coverage."
+        }
+      ]
+    },
+    {
+      "id": "invoice-negative",
+      "role": "simplify",
+      "source": "evals/fixtures/advisory-replay-20261118.sh",
+      "base": "babc4a0aa63fc44f0d849e38200905009a26a4fa",
+      "head": "1431d0a478fd60cbfc21bbaea7d2402ffef7354d",
+      "criteria": {
+        "negative": "Preserve the persistence/codec round trip and public HTTP checks, in addition to pure logic. Matching input/output across layers is insufficient for a deletion recommendation. Record covered test contracts for retention decisions."
+      },
+      "runs": [
+        {
+          "variant": "baseline",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 81176,
+          "durationMs": 39058,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 1,
+          "remainingDiffCount": 0,
+          "reportSha256": "082238db0203a6ab7d2614f81370d1e316ec776c9a9c9cc971d2c0db230872db",
+          "findings": [],
+          "adjudication": "No finding. Compared the retained pure unit, persistence round trip and HTTP response tests."
+        },
+        {
+          "variant": "simplify_first_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 9,
+          "totalTokens": 218741,
+          "durationMs": 56412,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "832ad6f2be38db6a85e7a1d80f08f9e8edcc86b81a35dd54c87199b2a14b4db4",
+          "findings": [],
+          "adjudication": "No finding. Explicitly retained all three distinct contracts while identifying their overlapping example value."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "named",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 4,
+          "totalTokens": 11596,
+          "durationMs": 14954,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "69502a18681c104f0418e10ea338067a18589db30651cc328c834ac31ed32176",
+          "findings": [],
+          "adjudication": "No finding. Explicitly retained the pure logic, real temporary file round trip and running HTTP success/error contracts."
+        },
+        {
+          "variant": "baseline",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 7,
+          "totalTokens": 105370,
+          "durationMs": 38115,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 1,
+          "remainingDiffCount": 0,
+          "reportSha256": "99719b09fa7e8f3f1c28e4feb3ce3d549b5046d65420ecc9afd92dacea9a3f08",
+          "findings": [],
+          "adjudication": "No finding. Compared the retained pure unit, persistence round trip and HTTP response tests."
+        },
+        {
+          "variant": "simplify_second_candidate",
+          "workspace": "neutral",
+          "status": "pass",
+          "actualModels": [
+            "gpt-6.2-sol"
+          ],
+          "exitCode": 0,
+          "turns": 6,
+          "totalTokens": 18843,
+          "durationMs": 19338,
+          "compactions": 0,
+          "errorCode": null,
+          "findingCount": 0,
+          "blockerCount": 0,
+          "toolErrorCount": 0,
+          "remainingDiffCount": 0,
+          "reportSha256": "6166de84e028ed0fe86df0d1b463ff8f9313b347339f517d34cb907482346d80",
+          "findings": [],
+          "adjudication": "No finding. Explicitly retained the pure logic, real temporary file round trip and running HTTP success/error contracts."
+        }
+      ]
+    }
+  ]
+}

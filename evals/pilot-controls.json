@@ -1,0 +1,55 @@
+[
+  {
+    "id": "catalog-quality",
+    "nwo": "Imageomics/catalog",
+    "role": "quality",
+    "target": "silent-extra-repo-errors",
+    "repo": ".local/eval-controls/catalog-quality",
+    "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+    "originalHead": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+    "head": "ac7e37f323ff31c591a8d9da597bfeac1a2b0580",
+    "changed": [
+      "scripts/export-tags.js"
+    ]
+  },
+  {
+    "id": "catalog-performance",
+    "nwo": "Imageomics/catalog",
+    "role": "performance",
+    "target": "duplicate-model-fetch",
+    "repo": ".local/eval-controls/catalog-performance",
+    "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+    "originalHead": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+    "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+    "changed": [
+      "main.js",
+      "scripts/export-tags.js"
+    ]
+  },
+  {
+    "id": "wallet-simplify",
+    "nwo": "sirosfoundation/go-wallet-backend",
+    "role": "simplify",
+    "target": "redundant-hex-byte-conversion",
+    "repo": ".local/eval-controls/wallet-simplify",
+    "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+    "originalHead": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+    "head": "56f12e5a58156e62daa1846ccf3062f05a3a7741",
+    "changed": [
+      "internal/service/webauthn.go"
+    ]
+  },
+  {
+    "id": "mcp-comments",
+    "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+    "role": "comments",
+    "target": "false-auto-recovery",
+    "repo": ".local/eval-controls/mcp-comments",
+    "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+    "originalHead": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+    "head": "9c4c029a556a0e26389dc1b385d900c46acb023d",
+    "changed": [
+      "README.md"
+    ]
+  }
+]

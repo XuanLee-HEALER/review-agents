@@ -1,0 +1,106 @@
+{
+  "pairedCodeAndTestsIdentical": true,
+  "pairedCodeAndTestsDiffSha256": "e4647139cbb2f60c8b4010d779222322751482c94920a4a355675c906ef592bb",
+  "staleGuideOutsideDiff": true,
+  "syntheticExamplesSubmittedToHandler": [
+    {
+      "caseId": "guide-before",
+      "requestBody": {
+        "channel": "email"
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 400,
+        "body": {
+          "error": "invalid_channel"
+        }
+      },
+      "correctedRequest": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "fixtureTests": "pass"
+    },
+    {
+      "caseId": "guide-revised",
+      "requestBody": {
+        "delivery": {
+          "channel": "email"
+        }
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "correctedRequest": null,
+      "fixtureTests": "pass"
+    },
+    {
+      "caseId": "wording",
+      "requestBody": {
+        "channel": "email"
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "correctedRequest": null,
+      "fixtureTests": "pass"
+    }
+  ],
+  "mcpExamples": {
+    "mcp-restart-doc": {
+      "parsedJsonExamples": 5,
+      "validatedBy": "Python json.loads"
+    },
+    "mcp-original": {
+      "parsedJsonExamples": 5,
+      "validatedBy": "Python json.loads"
+    }
+  },
+  "inertNpmPackProbe": {
+    "npm": "11.20.0",
+    "node": "v26.13.1",
+    "files": [
+      "dist/index.js",
+      "dist/loader.js",
+      "dist/tools/get_api_details.js",
+      "package.json"
+    ]
+  }
+}

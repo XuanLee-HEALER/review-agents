@@ -1,0 +1,2064 @@
+{
+  "version": 2,
+  "evaluation_date": "2026-11-11",
+  "method": "Single evaluator source inspection and focused experiments; known-set regression, no independent human adjudicator.",
+  "classifications": {
+    "supported_actionable": "Concrete correctness/documentation/reliability or demonstrated repeated-I/O improvement",
+    "supported_optional": "Valid bounded cleanup or unmeasured optimization; no claim of substantial impact",
+    "unsupported_incorrect": "Evidence contradicted or recommendation not justified",
+    "unresolved": "Insufficient evidence"
+  },
+  "runs": [
+    {
+      "phase": "baseline",
+      "id": "AA-Factory_aafactory-prototype-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/AA-Factory_aafactory-prototype-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "missing-pytest-plugins",
+          "classification": "supported_actionable",
+          "reference": "missing-pytest-plugins",
+          "evaluator_evidence": "pyproject.toml dev deps and lock lack installed plugin packages for mocker/pytest.mark.asyncio; extra declarations are not installed dependencies."
+        },
+        {
+          "index": 1,
+          "cause": "unpatched-local-alias",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "test_mock_chat.py:2 imports the loader before module attribute patch at 25-31; line33 retains original alias; interface.py:55 onward accesses database."
+        },
+        {
+          "index": 2,
+          "cause": "tests-call-mock",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "test_mock_chat.py:18-35 calls the newly patched mock; side_effect itself mutates history. interface.py:77-94 is the uncalled production orchestration."
+        }
+      ],
+      "nwo": "AA-Factory/aafactory-prototype",
+      "duration_ms": 75927,
+      "exit_code": 1,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "cdc8a67812c63ba74ed3176cd35a47e9e9a8fc8dc6bc3d448a155faac02b9540",
+      "report": {
+        "role": "quality",
+        "base": "e7f558c7360abac335af2df22f4ed376992b30ab",
+        "head": "a1978cb75950a879df8805e4a5f373eb6678f6f9",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "findings",
+        "summary": "已完整审阅新增测试及必要上下文，发现 3 项需修正的问题：测试插件依赖未声明、数据库加载器的替换未生效，以及测试未调用实际被测实现。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 6,
+            "title": "声明新增测试所需的插件依赖",
+            "evidence": "该测试同时使用 mocker fixture 和 pytest.mark.asyncio，但根目录 pyproject.toml 的开发依赖只有 pytest、pytest-cov，poetry.lock 也没有 pytest-mock 或 pytest-asyncio 的包记录，仓库中没有自定义 mocker fixture。仅按声明依赖创建的新环境无法提供 mocker；现有 AnyIO 4.7.0 插件也不会仅凭 asyncio 标记执行此协程测试。",
+            "recommendation": "若保留当前测试写法，将兼容的 pytest-mock 和 pytest-asyncio 声明为开发依赖，并通过依赖管理工具更新锁文件，保证全新安装后测试具备所需 fixture 和异步执行支持。"
+          },
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 33,
+            "title": "通过模块属性调用已替换的头像加载器",
+            "evidence": "第 2 行直接导入了 _load_avatar_infos_for_chat，第 25–31 行却只替换 chat_interface 模块上的属性，因此此处仍调用原函数。原函数在 chat/interface.py:55–60 使用应用的 DB_PATH 读取 TinyDB，并直接访问头像设置；测试既没有准备该数据库，也没有替换路径。即使补齐插件，测试仍依赖开发者本地数据，缺少设置记录时会在到达断言前失败。",
+            "recommendation": "改为调用 chat_interface._load_avatar_infos_for_chat()，使现有替换生效；若这里只需要构造被测函数的参数，也可直接使用固定头像元组并删除无用的加载器替换。"
+          },
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 35,
+            "title": "调用真实的 send_request_to_llm，而不是直接验证模拟对象",
+            "evidence": "此处调用的是第 18–22 行已替换的 send_request_to_open_ai；返回元组和 CHAT_HISTORY 更新也全部由测试自己的 llm_side_effect 硬编码生成。实际 UI 回调是 chat/interface.py:77–94 的 send_request_to_llm，但测试从未调用它。修复前置运行问题后，即便该回调不再更新历史或返回错误结果，当前断言仍可通过。此外，真实 OpenAI 包装函数只接收 messages，并不接收此处的十个参数。",
+            "recommendation": "调用 chat_interface.send_request_to_llm，令 OpenAI 模拟仅返回回答文本，并替换所选 elevenlabs 语音依赖及视频生成依赖。删除模拟中的历史写入和最终返回元组，让真实回调负责这些行为，再用现有断言验证结果。"
+          }
+        ],
+        "checked": [
+          "已读取唯一变更文件的全部差异及 head 源码行号。",
+          "已对照 base/head 聊天实现，追踪 UI 回调、头像加载器、OpenAI、语音和视频依赖。",
+          "已检查相邻测试、测试配置、开发依赖、锁文件及 fixture／插件注册情况。",
+          "已核对 pytest 8.3.5、AnyIO 4.7.0 和 TinyDB 4.8.2 的相关上游源码，以及 pytest-mock 的 fixture 文档。"
+        ],
+        "limitations": [
+          "仅进行静态审阅，未运行 pytest、安装依赖或访问应用数据库；未验证开发者环境中是否额外安装了未声明的插件。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 9,
+        "compactions": 0,
+        "totalTokens": 279803,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:aafactory/src/aafactory/chat/interface.py",
+            "head:aafactory/src/tests/test_chat/test_chat_interface.py",
+            "head:pyproject.toml",
+            "head:aafactory/src/tests/test_chat/test_mock_chat.py",
+            "head:aafactory/src/tests/test_configuration.py",
+            "head:aafactory/src/aafactory/configuration.py",
+            "head:aafactory/src/aafactory/database/manage_db.py",
+            "head:aafactory/src/aafactory/fetcher/fetching.py",
+            "base:aafactory/src/aafactory/chat/interface.py",
+            "head:poetry.lock",
+            "head:aafactory/src/aafactory/utils/voice.py",
+            "head:aafactory/src/aafactory/comfyui/video.py"
+          ],
+          "searches": 6,
+          "toolCalls": 26,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "Imageomics_catalog-performance",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-performance/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "duplicate-model-fetch",
+          "classification": "supported_actionable",
+          "reference": "duplicate-model-fetch",
+          "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+        }
+      ],
+      "nwo": "Imageomics/catalog",
+      "duration_ms": 57021,
+      "exit_code": 0,
+      "role_prompt_sha256": "a1ded5066b29dbf81a42ea3fb27463d89ad2bc82fd9f3d8a61d065a6607a8ea5",
+      "raw_report_sha256": "d8df18daa6d99ca0438440eb327508337f1431fe453483b8289d50ffaf4e1c2e",
+      "report": {
+        "role": "performance",
+        "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+        "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅全部差异及相关调用路径。未发现需要阻塞的重大回归；有一项可选优化：复用已获取的外部模型详情，避免重复请求与解析。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "main.js",
+            "line": 326,
+            "title": "复用额外模型的详情，避免紧接着再次获取",
+            "evidence": "新增逻辑已请求并解析 models/{entry.repo}，随后把结果加入 hfItems；第 330–345 行又对所有模型请求 models/{item.id}。当返回的 id 与配置名称一致时，每个成功加入的外部模型会访问同一详情 URL 两次。scripts/export-tags.js 第 132–150 行也有同一问题。该成本发生在浏览器首次加载 models/all，以及每次标签导出；额外模型较多或 API 较慢时更明显。浏览器成功加载后的类型缓存可避免后续重复加载，但不能消除首次加载的重复工作。",
+            "recommendation": "将需要补全详情的组织列表项与已取得详情的外部模型分开处理，合并时直接复用 fetched 中的结果，并同步调整导出脚本。保留原有顺序、去重和单项请求失败处理，无需增加持久缓存。"
+          }
+        ],
+        "checked": [
+          "完整读取 README.md、main.js、public/config.yaml、scripts/export-tags.js 的全部差异页。",
+          "对照 base，确认模型详情循环原已存在，重复获取源于新增结果被送入该循环。",
+          "检查配置校验、默认值、按类型筛选、去重及失败处理。",
+          "追踪前端首次加载、类型切换、成功加载缓存，以及标签导出的调用顺序和每周工作流。"
+        ],
+        "limitations": [
+          "未运行应用、导出脚本、测试或性能基准；成本判断来自静态调用路径。",
+          "默认 ADDITIONAL_HF_REPOS 为空，当前默认配置不触发上述重复工作。",
+          "实际网络传输成本还受浏览器及 HTTP 缓存影响；未测量请求延迟、响应大小或可获得的提速。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 6,
+        "compactions": 0,
+        "totalTokens": 102063,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:main.js",
+            "head:scripts/export-tags.js",
+            "base:main.js",
+            "base:scripts/export-tags.js",
+            "head:package.json",
+            "head:public/config.yaml",
+            "head:README.md",
+            "head:.github/workflows/weekly-tag-scan.yml",
+            "head:.github/workflows/deploy.yml"
+          ],
+          "searches": 3,
+          "toolCalls": 24,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "Imageomics_catalog-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "duplicate-model-fetch",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+        },
+        {
+          "cause": "silent-extra-repo-errors",
+          "classification": "supported_actionable",
+          "reference": "silent-extra-repo-errors",
+          "evaluator_evidence": "export-tags.js136 catches get rejection as null then export continues; no repo/error diagnostic. Frontend already logs. Repaired control adds log before same null result, verified with mock-network experiment.",
+          "index": 1
+        }
+      ],
+      "nwo": "Imageomics/catalog",
+      "duration_ms": 91876,
+      "exit_code": 1,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "c6b07c248437fa147006f33fbe122c9ad968cafa3e960d748f6be1119fdcb56e",
+      "report": {
+        "role": "quality",
+        "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+        "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "findings",
+        "summary": "已检查全部变更及相关调用链，发现一项应修复的可靠性问题和一项诊断信息保留建议。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "main.js",
+            "line": 326,
+            "title": "避免对已获取详情的额外模型再次请求详情",
+            "evidence": "当 repoType 为 models 时，新增分支已通过 models/<repo> 获取详情，但这里将结果并入 hfItems 后，329–345 行又对这些模型请求同一接口。第二次 HTTP 请求失败会丢弃首次成功的数据；若请求或 JSON 解析拒绝，Promise.all 会进入外层 catch，组织模型也无法写入 allItems.models。scripts/export-tags.js 的 139–150 行存在相同的重复请求和成功数据丢失路径。",
+            "recommendation": "仅对组织列表返回的模型补取详情，再合并已成功获取的额外仓库；同步调整前端和导出脚本，保留首次成功的详情结果。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "scripts/export-tags.js",
+            "line": 136,
+            "title": "保留额外 HF 仓库获取失败的诊断信息",
+            "evidence": "get() 会抛出包含 HTTP 状态和 URL 的错误，但新增的 catch 将其直接替换为 null。后续只输出成功条目数量并写入 tag-export.txt，外层错误处理无法再区分仓库没有标签与请求失败。每周扫描工作流直接使用该文件比较并更新基线，因此可能在没有失败提示的情况下使用不完整快照。相比之下，main.js 的对应新增分支会保留仓库名和错误信息。",
+            "recommendation": "若继续采用尽力收集策略，至少在返回 null 前输出仓库类型、仓库名及原始错误，并在最终摘要中标明存在获取失败，使维护者能够判断快照是否完整。"
+          }
+        ],
+        "checked": [
+          "读取 README.md、main.js、public/config.yaml 和 scripts/export-tags.js 的全部差异页。",
+          "对照基线实现，检查配置加载、校验、默认值及初始化流程。",
+          "追踪 HF 数据获取、模型详情补取、缓存写入和错误处理路径。",
+          "检查导出脚本的文件写入、每周标签扫描调用方及相邻脚本约定。",
+          "检查 package.json 和仓库文件清单；未发现自动化测试文件或测试命令。"
+        ],
+        "limitations": [
+          "本次为只读静态审查，未执行构建、导出脚本、浏览器测试或网络故障测试。",
+          "未验证实际 Hugging Face 响应或故障发生频率；上述问题依据代码中的重复请求及错误传播路径判断。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 7,
+        "compactions": 0,
+        "totalTokens": 186611,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:main.js",
+            "head:scripts/export-tags.js",
+            "head:package.json",
+            "head:.github/workflows/weekly-tag-scan.yml",
+            "head:README.md",
+            "head:scripts/fetch-releases.js",
+            "base:scripts/export-tags.js",
+            "head:docs/tag-grouping-process.md",
+            "base:main.js",
+            "head:public/config.yaml"
+          ],
+          "searches": 1,
+          "toolCalls": 24,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "Imageomics_catalog-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/Imageomics_catalog-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "missing-config-key-comment",
+          "classification": "supported_actionable",
+          "reference": "missing-config-key-comment",
+          "evaluator_evidence": "export-tags.js header11-12 omits mandatory ADDITIONAL_HF_REPOS validated at48-51."
+        }
+      ],
+      "nwo": "Imageomics/catalog",
+      "duration_ms": 65392,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "49ad054e3f7d5bc62fad58988d0d8f5130ea8a5ae676890b1b6b484bed90ece3",
+      "report": {
+        "role": "comments",
+        "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+        "head": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅全部差异及相关调用链，发现 1 处脚本使用说明未同步新增配置依赖的问题；仅提供文档建议，不阻断变更。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "scripts/export-tags.js",
+            "line": 48,
+            "title": "同步脚本头部列出的必需配置项",
+            "evidence": "新增的第 48–62 行要求 ADDITIONAL_HF_REPOS 必须存在且为数组，但第 11–12 行的使用说明仍只列出 ORGANIZATION_NAME、API_BASE_URL 和 ADDITIONAL_REPOS。依据该说明准备配置时会漏掉新依赖，并在进入主流程前触发异常。该脚本也由 .github/workflows/weekly-tag-scan.yml 第 39–42 行直接调用。",
+            "recommendation": "将第 11–12 行替换为：\n// 从 public/config.yaml 读取 ORGANIZATION_NAME、API_BASE_URL、\n// ADDITIONAL_REPOS 和 ADDITIONAL_HF_REPOS。\n// 后两项必须为数组；没有额外仓库时也应保留并设置为 []。"
+          }
+        ],
+        "checked": [
+          "已读取 README.md、main.js、public/config.yaml、scripts/export-tags.js 的全部差异页。",
+          "已核对前端和导出脚本的完整相关实现，包括配置校验、空数组语义、按类型请求、去重及失败处理。",
+          "已追踪前端初始化与筛选调用、每周标签扫描工作流，并对照 README 和标签分组文档中的使用说明。",
+          "已查看 package.json 和相关入口配置；未发现测试路径或测试脚本。"
+        ],
+        "limitations": [
+          "本次为静态审阅，未执行构建、导出脚本或浏览器测试，也未验证 Hugging Face API 的实际响应。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 5,
+        "compactions": 0,
+        "totalTokens": 91427,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:public/config.yaml",
+            "head:scripts/export-tags.js",
+            "head:main.js",
+            "head:package.json",
+            "head:docs/tag-grouping-process.md",
+            "head:.github/workflows/weekly-tag-scan.yml",
+            "base:main.js",
+            "base:scripts/export-tags.js",
+            "head:index.html",
+            "head:vite.config.js"
+          ],
+          "searches": 4,
+          "toolCalls": 25,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "SiaFoundation_indexd-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/SiaFoundation_indexd-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "metrics-first-page-only",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "admin.go:1316 requests AppStats/hosts.Stats with offset0 limit1000; SQL stats.go applies LIMIT/OFFSET; API promises total/all metrics without pagination. No streaming-encoder reference credited."
+        },
+        {
+          "cause": "state-construction-duplication",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "admin.go722-748 and1257-1280 construct same State with same reads, field expressions, time threshold; only variable names and response placement differ. Small State,error helper preserves error handlers, optional maintenance improvement.",
+          "index": 1
+        }
+      ],
+      "nwo": "SiaFoundation/indexd",
+      "duration_ms": 61656,
+      "exit_code": 1,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "6e3bbba288cf8a19d11cad262ba3adebe2ad609c8708741a8c18b690e46387c0",
+      "report": {
+        "role": "quality",
+        "base": "34903936328bedda64ba8ba4acbe0fa58d94ae4c",
+        "head": "933dc46dd64f5f927e1cc41fa845544dcbd749b1",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "findings",
+        "summary": "发现一项影响指标完整性的静默截断问题，以及一项状态构造逻辑重复的维护性问题。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "api/admin/admin.go",
+            "line": 1316,
+            "title": "聚合采集不应固定只读取前 1000 条记录",
+            "evidence": "这里的 AppStats(0, 1000) 和第 1325 行的 hosts.Stats(..., 0, 1000) 都只读取第一页。persist/postgres/stats.go 确实将这些参数用于 SQL OFFSET/LIMIT，hosts.HostManager.Stats 也只是透传参数。应用分组或已使用主机超过 1000 个时，剩余指标会被静默遗漏，而此端点既不处理分页参数，也不提示截断；这与新增 OpenAPI 中“单次返回所有可用指标”的接口契约不符。",
+            "recommendation": "在聚合处理器内部获取完整结果，或遍历所有分页并保留现有错误处理，而不是使用固定总量上限。增加超过 1000 条应用或主机记录的边界测试。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "api/admin/admin.go",
+            "line": 1257,
+            "title": "复用已有的 State 构造逻辑",
+            "evidence": "第 1257–1280 行重新实现了 handleGETState（第 722–748 行）已有的完整状态构造过程，包括扫描索引、Explorer、构建信息、链高度和同步判断；两处只有局部变量名称及最终输出方式不同。现在同一个 State 契约有两份独立实现，维护字段来源或同步判断时必须同时修改两个处理器，已有的 /state 路径测试也不能覆盖新增副本。",
+            "recommendation": "提取一个返回 (State, error) 的私有状态读取方法，让 /state 和聚合指标处理器共同调用；响应格式和 HTTP 错误处理继续留在各处理器中，无需引入通用聚合框架。"
+          }
+        ],
+        "checked": [
+          "已读取三个变更文件的全部 diff，并对照相关 base 实现。",
+          "已检查新增路由、相邻统计接口、State 和钱包响应类型及 Prometheus 编码器。",
+          "已追踪应用和主机统计到 HostManager 及 PostgreSQL 分页查询。",
+          "已检查相关现有 API 测试、编码器测试及 OpenAPI 接口描述。",
+          "已静态追踪数据读取失败和编码失败分支。"
+        ],
+        "limitations": [
+          "未运行测试、编译或实际 HTTP/Prometheus 采集；结论基于固定提交的静态代码检查。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 7,
+        "compactions": 0,
+        "totalTokens": 169195,
+        "coverage": {
+          "changedFiles": 3,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:api/admin/admin.go",
+            "head:api/admin/prometheus.go",
+            "head:internal/prometheus/encoder.go",
+            "head:api/admin/types.go",
+            "head:go.mod",
+            "head:api/admin/admin_test.go",
+            "head:persist/postgres/stats.go",
+            "head:internal/prometheus/metric.go",
+            "head:api/options.go",
+            "base:api/admin/admin.go",
+            "head:internal/prometheus/encoder_test.go",
+            "head:hosts/manager.go",
+            "head:openapi/admin.yml"
+          ],
+          "searches": 10,
+          "toolCalls": 39,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "Tzeusy_butlers-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "asyncmock-acquire",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "test_route_execute_trace_decoupling.py:130 uses AsyncMock pool; acquire() returns coroutine, unlike async context manager required by daemon _ensure_owner_entity. Startup catches failure; adjacent owner-bootstrap mock uses synchronous factory."
+        },
+        {
+          "index": 1,
+          "cause": "duplicated-runtime-fixtures",
+          "classification": "supported_optional",
+          "reference": "duplicated-runtime-fixtures",
+          "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+        }
+      ],
+      "nwo": "Tzeusy/butlers",
+      "duration_ms": 207784,
+      "exit_code": 0,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "c6a565680fcd6541c4eb55dbae8674b98b53e9915d54ca26888925a33847cb78",
+      "report": {
+        "role": "quality",
+        "base": "b57517a5f8daf3b4e776884589ffedb35018b5d4",
+        "head": "403e15fe7702ac03ac466dedd11e49f9d6ce7d66",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "发现两项测试夹具的可靠性与可维护性问题，均可通过局部调整解决。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_route_execute_trace_decoupling.py",
+            "line": 130,
+            "title": "保留 acquire 的同步上下文管理器工厂接口",
+            "evidence": "基线使用 MagicMock 池，让 acquire() 直接返回异步上下文管理器；改为无 spec 的 AsyncMock 后，acquire 也会成为 AsyncMock，调用返回协程，而不是这里配置了 __aenter__ 的 return_value。_start_daemon_with_route_execute 会实际调用 daemon.start()，随后 _ensure_owner_entity 在 daemon.py:1322 执行 async with pool.acquire()，因此会触发 TypeError。该异常被现有非致命处理捕获，测试仍可继续，但配置的 mock_conn 不会被使用，并会产生 bootstrap 警告。",
+            "recommendation": "保留基线的 MagicMock 池并分别为 execute、fetchrow 等异步方法配置 AsyncMock；或者显式将 acquire 设为返回异步上下文管理器的 MagicMock。tests/daemon/test_owner_bootstrap.py:61–66 已有可复用的配置模式。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_daemon.py",
+            "line": 255,
+            "title": "集中维护重复的 runtime_config 测试工厂",
+            "evidence": "本次在七个变更文件中分别新增了相同的 _make_runtime_config_row 和 _make_fetchrow_side_effect，实现只在 butler_name 的默认值上不同，而该差异已经可以通过参数表达。这些副本都服务于同一条 daemon.start → RuntimeConfigAccessor.seed_if_empty → _row_to_config 调用链；后者按列名直接读取完整行结构。目前同一个数据库行契约及查询分流规则需要维护七份，字段调整时会让通知、关闭、存活报告和追踪测试分别承担同步维护成本。",
+            "recommendation": "仅将这两个相同的工厂提取到一个共享测试辅助模块或 fixture 中，由各文件显式传入 butler_name；保留各文件用途不同的基础设施配置，无需抽象整个 _patch_infra。"
+          }
+        ],
+        "checked": [
+          "已完整阅读七个变更文件的全部 diff，并对关键位置比较 base 与 head。",
+          "已追踪 daemon 启动、owner bootstrap、运行时配置播种及行转换调用链。",
+          "已检查相邻 owner bootstrap 测试、运行时配置测试及共享测试夹具惯例。",
+          "已检查 Python 版本声明，并参考 CPython 3.12 上游 AsyncMock 与异步上下文管理器测试确认相关协议。"
+        ],
+        "limitations": [
+          "未运行 pytest、静态检查或执行性探针；结论基于固定提交的静态审阅。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 19,
+        "compactions": 1,
+        "totalTokens": 641971,
+        "coverage": {
+          "changedFiles": 7,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:tests/daemon/test_route_execute_trace_decoupling.py",
+            "head:tests/daemon/test_graceful_shutdown.py",
+            "head:tests/conftest.py",
+            "head:pyproject.toml",
+            "head:src/butlers/core/runtime_config.py",
+            "head:tests/daemon/test_notify_contact_id.py",
+            "head:src/butlers/daemon.py",
+            "head:tests/daemon/test_daemon.py",
+            "head:tests/daemon/test_liveness_reporter.py",
+            "head:conftest.py",
+            "head:tests/daemon/test_notify_react.py",
+            "head:tests/daemon/test_route_to_butler_accepted_status.py",
+            "base:tests/daemon/test_route_execute_trace_decoupling.py",
+            "head:src/butlers/testing/shared_fixtures.py",
+            "head:tests/daemon/test_owner_bootstrap.py",
+            "head:tests/core/test_runtime_config.py",
+            "base:tests/daemon/test_graceful_shutdown.py",
+            "base:tests/daemon/test_daemon.py",
+            "head:.python-version"
+          ],
+          "searches": 20,
+          "toolCalls": 77,
+          "toolErrors": [
+            "fetch_document: Documentation HTTP 404"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "Tzeusy_butlers-simplify",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/Tzeusy_butlers-simplify/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "duplicated-runtime-fixtures",
+          "classification": "supported_optional",
+          "reference": "duplicated-runtime-fixtures",
+          "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+        },
+        {
+          "index": 1,
+          "cause": "redundant-missing-id-factory",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "test_notify_contact_id.py:311-339 duplicates _patch_infra default DB mocks at80-116 then replaces them. Sole call346 ignores returned DB/pool later. Valid local deletion, different root cause from cross-file runtime factory reuse."
+        }
+      ],
+      "nwo": "Tzeusy/butlers",
+      "duration_ms": 175887,
+      "exit_code": 0,
+      "role_prompt_sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82",
+      "raw_report_sha256": "b6d3fb39e5aab73992d2963aa53da4a6fad82b3ac52743799c63e5053c5595d3",
+      "report": {
+        "role": "simplify",
+        "base": "b57517a5f8daf3b4e776884589ffedb35018b5d4",
+        "head": "403e15fe7702ac03ac466dedd11e49f9d6ce7d66",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "发现两项非阻塞的简化机会：合并重复的运行配置查询桩，以及删除已与默认基础设施设置等价的专用包装。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_daemon.py",
+            "line": 271,
+            "title": "将七份相同的运行配置查询桩收敛为一个共享工厂",
+            "evidence": "七个变更文件都新增了相同的配置行构造和 fetchrow 查询分派，仅 butler_name 的默认值不同。各文件的行构造函数也都只由对应的查询桩调用。这是同一当前表结构和查询契约的重复维护，并非不同测试行为。",
+            "recommendation": "在现有测试支持区域新增一个小型共享工厂，统一返回异步 fetchrow 回调，各调用点显式传入当前使用的 butler_name。回调仍以 `\"runtime_config\" in query` 分派，匹配时现场创建包含现有字段和值的新字典，否则返回 None；各测试继续自行创建 AsyncMock。这样可删除七份重复实现，同时保持名称差异、每次查询的对象独立性及非运行配置查询的返回行为；无需合并各文件不同的基础设施设置。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_notify_contact_id.py",
+            "line": 311,
+            "title": "删除与默认设置等价的 missing-id 专用基础设施包装",
+            "evidence": "本次补充后，_make_missing_id_patches 创建的 connection、pool 和 database 设置，与同文件 _patch_infra() 的默认分支等价；它还先调用 _patch_infra() 创建另一套对象，再替换 db_from_env。全仓库唯一调用位于第 346 行，返回的 mock_pool 和 mock_db 均未被后续测试使用，butler_dir 参数在包装内也未使用。",
+            "recommendation": "删除 _make_missing_id_patches，将唯一调用直接改为 `patches = _patch_infra()`。默认工厂已经提供相同的查询返回值、runtime_config 分派、上下文退出值和数据库连接设置，并为每次调用创建独立 mock；测试中的标识符缺失、所有者回退和优先级断言都不依赖被替换对象的身份，因此无需继续保留这套重复构造及覆盖路径。用于定制查询返回值和异常的 _make_pool_with_conn 则应保留。"
+          }
+        ],
+        "checked": [
+          "完整阅读七个变更文件的全部 diff、文件内容、受影响辅助函数及实际测试调用。",
+          "跨文件比较运行配置行、查询分派、pool/connection 设置和审计数据库差异，并搜索两个配置辅助函数的全部引用。",
+          "核对 _make_missing_id_patches 的唯一调用及其完整测试，确认额外返回对象没有被使用。",
+          "阅读 RuntimeConfigAccessor、对应单元测试及 runtime_config 迁移，核对字段转换、种子读取和失败路径。",
+          "检查现有共享测试支持、pytest 配置，以及 daemon 启动、所有者实体初始化和审计连接相关实现。"
+        ],
+        "limitations": [
+          "结论基于固定 head 403e15fe7702ac03ac466dedd11e49f9d6ce7d66 与指定 base；未执行测试，也未验证工作区与固定快照是否一致。",
+          "未发现 SOURCES.md；本报告记录了已核对的仓库来源，未创建或修改任何文件。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 9,
+        "compactions": 1,
+        "totalTokens": 352609,
+        "coverage": {
+          "changedFiles": 7,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:tests/daemon/test_daemon.py",
+            "head:tests/daemon/test_graceful_shutdown.py",
+            "head:tests/daemon/test_liveness_reporter.py",
+            "head:tests/daemon/test_notify_contact_id.py",
+            "head:tests/daemon/test_notify_react.py",
+            "head:tests/daemon/test_route_execute_trace_decoupling.py",
+            "head:tests/daemon/test_route_to_butler_accepted_status.py",
+            "head:tests/conftest.py",
+            "head:conftest.py",
+            "head:src/butlers/core/runtime_config.py",
+            "head:tests/core/test_runtime_config.py",
+            "head:src/butlers/daemon.py",
+            "head:src/butlers/testing/shared_fixtures.py",
+            "head:alembic/versions/core/core_061_runtime_config.py",
+            "head:pyproject.toml"
+          ],
+          "searches": 25,
+          "toolCalls": 79,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "UniverseCitiz3n_msgraph-kb-mcp-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/UniverseCitiz3n_msgraph-kb-mcp-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "mcp-config-filename",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+        },
+        {
+          "index": 1,
+          "cause": "false-auto-recovery",
+          "classification": "supported_actionable",
+          "reference": "false-auto-recovery",
+          "evaluator_evidence": "index.ts:19 loadIndex once; loader.ts:208-223 returns before cachedIndex assignment; getIndex cannot refresh. README134 waiting wording omits required restart."
+        }
+      ],
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "duration_ms": 234726,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "844df0140a6839daff39bb374e54c9d06110455af8d2ff51f3eb5ce935fba681",
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅 README.md 的完整差异并追踪相关实现，发现两处文档正确性问题。以下均为建议，未修改文件。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 55,
+            "title": "修正 Claude Code 项目配置文件名",
+            "evidence": "新增指引要求写入 `mcp.json`，但 Claude Code 当前官方文档明确要求项目根目录的 `.mcp.json`，并在启动时读取该文件。按此处文件名操作，配置不会被自动发现。依据：https://code.claude.com/docs/en/mcp-quickstart.md 的“Find your configuration on disk”和“Edit .mcp.json directly”章节。",
+            "recommendation": "将本行替换为：Add to `.mcp.json` in your project root (create the file if it doesn't exist):"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 134,
+            "title": "明确克隆失败后需要重启，不会自动恢复",
+            "evidence": "“until data is available”容易让读者认为等待或恢复网络即可恢复服务。实际 `src/index.ts:19` 仅在启动时调用一次 `loadIndex()`，请求处理只读取缓存（第 118–120 行）；`src/loader.ts:208–223` 在克隆失败后直接返回，未设置缓存，而缓存赋值仅发生于成功路径的第 261 行。当前没有重试或重新加载入口，原进程会持续返回缺少数据的结果。",
+            "recommendation": "保留临时目录说明，将第二句替换为：If the clone fails, the server still starts, but tools return descriptive errors. There is no automatic retry; restart the server after resolving the clone failure to try loading the data again."
+          }
+        ],
+        "checked": [
+          "完整读取 README.md 的全部差异页，并核对固定 head 的源文件行号。",
+          "追踪启动流程、数据加载与缓存、退出清理、五个工具的声明及返回结构。",
+          "检查包入口、构建脚本、依赖声明及锁文件中的相关配置。",
+          "查阅相关官方客户端配置文档及 npm Git 包安装说明，区分仓库事实与外部工具契约。"
+        ],
+        "limitations": [
+          "未执行安装、构建、测试或 MCP 客户端连接；运行时行为结论来自静态控制流。",
+          "仓库未固定客户端版本；Claude Code 配置文件名依据当前官方文档，未逐一验证历史版本或各操作系统环境。",
+          "未下载动态上游数据，未独立核实当前端点数量。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 14,
+        "compactions": 1,
+        "totalTokens": 464209,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/index.ts",
+            "head:src/loader.ts",
+            "head:src/search.ts",
+            "head:package-lock.json",
+            "head:tsconfig.json",
+            "head:src/tools/search_graph_apis.ts",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:src/tools/get_server_info.ts",
+            "head:.gitignore",
+            "base:README.md"
+          ],
+          "searches": 1,
+          "toolCalls": 55,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers.md\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/chat/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "rulecom_rule-io-sdk-simplify",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/rulecom_rule-io-sdk-simplify/report.json",
+      "judgments": [],
+      "nwo": "rulecom/rule-io-sdk",
+      "duration_ms": 83188,
+      "exit_code": 0,
+      "role_prompt_sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82",
+      "raw_report_sha256": "d9548221e2395ea50640783a8347dc4dbd6091726a3aaf07b54bca4510517ee5",
+      "report": {
+        "role": "simplify",
+        "base": "63089a6f9c49127afd22da65e366977ed24a1419",
+        "head": "778a137bbaa1aa3ecc25970da48655620bab8632",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "未发现值得提出的行为保持型简化建议。新增方法已复用查询构造和 v3 请求流程；进一步合并这些短方法或测试，会增加间接层，收益有限。",
+        "findings": [],
+        "checked": [
+          "已完整读取全部 5 个变更文件的差异页，并核对固定 base/head 上下文。",
+          "已完整检查三个新增收件人列表方法，以及 buildQueryString、requestV3、fetchV3 的查询、响应和错误处理路径。",
+          "已对照现有 automail、message、template、dynamic-set、campaign 列表实现；显式选取 page/per_page 保留了参数白名单和稳定的查询顺序，不建议直接改为展开整个参数对象。",
+          "已检查新增类型、现有分页及列表包装类型、订阅者类型和两层导出。现有共享类型已消除主要重复，独立的公开端点类型仍有清晰边界。",
+          "已检查全部 6 个新增测试、mock 工厂、逐测试重置和相邻列表测试；比较了重复设置、请求断言及不同响应夹具，未发现需要额外抽象的明显复杂性。",
+          "已搜索新增方法和类型的仓库内消费者；方法调用仅见于新增测试和方法文档示例。"
+        ],
+        "limitations": [
+          "仅进行了静态只读审查，未执行测试、类型检查或构建。",
+          "未连接 Rule.io 服务验证实际接口 schema；结论针对已检查代码的简化空间，不代表上游接口兼容性认证。",
+          "固定快照中未找到 SOURCES.md；遵循只读约束，未创建或修改文件。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 8,
+        "compactions": 0,
+        "totalTokens": 220480,
+        "coverage": {
+          "changedFiles": 5,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:src/client.ts",
+            "head:src/types/api.ts",
+            "head:tests/client.test.ts",
+            "head:package.json",
+            "head:vitest.config.ts",
+            "head:src/index.ts",
+            "head:src/types/index.ts",
+            "base:tests/client.test.ts",
+            "base:src/client.ts"
+          ],
+          "searches": 14,
+          "toolCalls": 43,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "sirosfoundation_go-wallet-backend-simplify",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-simplify/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "redundant-hex-byte-conversion",
+          "classification": "supported_optional",
+          "reference": "redundant-hex-byte-conversion",
+          "evaluator_evidence": "webauthn.go:526,537 creates ASCII hex string then []byte solely for zap.ByteString; zap.String preserves current JSON/console textual result. Optional error-path cleanup."
+        }
+      ],
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "duration_ms": 113848,
+      "exit_code": 0,
+      "role_prompt_sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82",
+      "raw_report_sha256": "b3c0ea7ea0ce0560819cad1a425b9f701931d1599cd19bcca74c83387b26cb1b",
+      "report": {
+        "role": "simplify",
+        "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+        "head": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "完整差异审阅完成，发现 1 项可选的局部简化；无阻断项。依赖替换移除和配置注释变更无需进一步抽象。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "internal/service/webauthn.go",
+            "line": 526,
+            "title": "直接记录十六进制字符串，省去字符串到字节切片的转换",
+            "evidence": "第 526、537 行均先用 fmt.Sprintf(\"%x\", ...) 生成字符串，再转换为 []byte 交给 zap.ByteString。这里的数据已经是文本，无需再引入字节切片表示。已核对项目使用的 zap v1.27.1：其 JSON 编码器对 String 和 ByteString 使用等价的文本转义逻辑，console 编码器也沿用该逻辑。",
+            "recommendation": "改为 zap.String(\"auth_data_hex\", fmt.Sprintf(\"%x\", attObj.RawAuthData))，并对 hex_preview 同样使用 zap.String，同时保留现有的 64 字节截断。这样无需新增导入或辅助函数；在仓库现有 JSON/console 日志配置下，字段名、内容、日志级别和顺序均不变，验证失败仍返回 ErrVerificationFailed，也不影响挑战清理或用户存储。原本就是字节数据的 credential_json 不必随之修改。"
+          }
+        ],
+        "checked": [
+          "已读取 go.mod、go.sum、internal/service/webauthn.go、pkg/config/config.go 的全部差异页。",
+          "已完整阅读 FinishRegistration，以及实际 HTTP 调用方 FinishWebAuthnRegistration 的请求处理和错误映射。",
+          "已阅读 WebAuthn 服务构造、NewServices、getAttestationPreference、GetAttestationConveyance，并对照 FinishAddCredential 和 FinishLogin。",
+          "已阅读相关注册成功、RSA、挑战错误与过期、ECDSA 回归测试及共享测试夹具；对照新增机制，未发现需要合并的新增测试设置。",
+          "已阅读日志初始化配置，并核对 zap v1.27.1 上游 field.go、config.go、zapcore/json_encoder.go 和 zapcore/console_encoder.go。",
+          "已核对 go-webauthn v0.16.3 上游 go.mod 和 webauthn/registration.go；当前变更已经移除原 WebAuthn fork 的 replace，无需再次建议。"
+        ],
+        "limitations": [
+          "仅进行了静态审阅，未执行构建、测试或性能测量。",
+          "日志简化的输出等价性已核对仓库现有 JSON/console 配置；未验证额外注入、且依赖原始 zap Field.Type 的自定义 Core。",
+          "未全面验证此次 WebAuthn 依赖升级的所有认证器兼容性，现有测试不能替代真实设备验证。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 8,
+        "compactions": 0,
+        "totalTokens": 345576,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:internal/service/webauthn.go",
+            "head:internal/service/webauthn_test.go",
+            "head:pkg/config/config.go",
+            "head:go.mod",
+            "head:internal/api/handlers.go",
+            "head:pkg/logging/logging.go",
+            "head:cmd/server/main.go",
+            "head:internal/api/handlers_test.go",
+            "head:internal/service/services.go"
+          ],
+          "searches": 15,
+          "toolCalls": 46,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "sirosfoundation_go-wallet-backend-performance",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/sirosfoundation_go-wallet-backend-performance/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "disabled-debug-encoding",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "webauthn.go:524-570 evaluates encoding arguments and traverses attestation before Debug. Default logger info. Guard avoids unused work; frequency/size not measured. Not a direct finding of redundant string-to-byte conversion."
+        }
+      ],
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "duration_ms": 64954,
+      "exit_code": 0,
+      "role_prompt_sha256": "a1ded5066b29dbf81a42ea3fb27463d89ad2bc82fd9f3d8a61d065a6607a8ea5",
+      "raw_report_sha256": "b6c0420c6e98c988eeb5ce887137ee20e2f8b2866e0e6969177c46d018231937",
+      "report": {
+        "role": "performance",
+        "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+        "head": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已完成全部差异审查，发现 1 项非阻断性能建议；未发现需要阻断的复杂度或性能回归。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "internal/service/webauthn.go",
+            "line": 523,
+            "title": "仅在启用 Debug 时遍历并编码详细诊断数据",
+            "evidence": "FinishRegistration 中，每个解析成功但 CreateCredential 验证失败的请求都会执行新增诊断块，包括完整 RawAuthData 的十六进制格式化及 string→[]byte 转换、AttStatement 遍历，以及字节字段和 x5c 证书的 Base64 编码。即使使用默认 info 日志级别，这些参数仍会在调用 Debug 前求值；已核对 zap v1.27.1 源码，级别检查发生在 Debug 方法内部。因此在验证失败频繁或证明数据、证书链较大时，会产生随数据量增长但没有日志输出收益的 CPU 和临时内存开销。此结论来自静态分析，未测量实际耗时。",
+            "recommendation": "用 s.logger.Core().Enabled(zap.DebugLevel) 判断包住新增的详细诊断块，将遍历和编码放在判断内部；保留 Error 日志及 ErrVerificationFailed 返回在判断外。这样无需新增缓存或抽象，也能保留启用 Debug 时的诊断内容。"
+          }
+        ],
+        "checked": [
+          "完整读取 go.mod、go.sum、internal/service/webauthn.go、pkg/config/config.go 的全部差异页，并对照 base 区分新增工作与既有实现。",
+          "追踪注册完成处理器、路由、一次性 challenge 校验及不同运行模式的限流接入，确认新增工作仅位于注册验证失败路径。",
+          "检查日志配置及相关测试上下文，并通过版本匹配的 zap v1.27.1 上游源码核实 Debug 的级别检查和字段构造行为。",
+          "核对 WebAuthn 从替换模块切回上游 v0.16.3 的依赖变化，并比较相关版本的 CreateCredential 与证明解析、验证入口；配置文件改动仅涉及注释。"
+        ],
+        "limitations": [
+          "未执行测试、基准测试或运行时剖析；未测量实际失败率、证明数据大小及性能影响。",
+          "依赖检查聚焦相关注册路径，未对升级依赖的全部内部实现进行穷尽审计。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 7,
+        "compactions": 0,
+        "totalTokens": 230673,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:internal/service/webauthn.go",
+            "head:go.mod",
+            "head:pkg/config/config.go",
+            "base:internal/service/webauthn.go",
+            "head:internal/api/handlers.go",
+            "head:pkg/logging/logging.go",
+            "head:cmd/server/main.go",
+            "head:internal/service/webauthn_test.go",
+            "head:internal/server/providers.go",
+            "head:internal/modes/auth/auth.go",
+            "head:internal/modes/backend/backend.go"
+          ],
+          "searches": 11,
+          "toolCalls": 36,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "torchfont_torchfont-performance",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-performance/report.json",
+      "judgments": [
+        {
+          "cause": "eager-all-style-axes",
+          "classification": "supported_optional",
+          "reference": "eager-all-style-axes",
+          "evaluator_evidence": "datasets.py365 calls _style_axes; 446-452 caches every style tuple; Rust getter mod.rs102-110 clones all entries. First-use O(styles+axes) is certain; no measured latency claimed.",
+          "index": 0
+        }
+      ],
+      "nwo": "torchfont/torchfont",
+      "duration_ms": 80639,
+      "exit_code": 0,
+      "role_prompt_sha256": "a1ded5066b29dbf81a42ea3fb27463d89ad2bc82fd9f3d8a61d065a6607a8ea5",
+      "raw_report_sha256": "4d49fd5dded857e4f179596be1a740e29bea45248b60b4db5e499d23c052803f",
+      "report": {
+        "role": "performance",
+        "base": "5a2c993caa9c1183f58b1cc50aea6a2609d96959",
+        "head": "7604bc745c38d151e23b8f7528a65f74c2613545",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅全部 6 个文件的完整差异及相关调用链。未发现需阻断的简洁性或性能问题；有 1 项关于首次 locate 开销的非阻断建议。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "torchfont/datasets.py",
+            "line": 365,
+            "title": "单样式定位不必首次物化所有样式的轴信息",
+            "evidence": "缓存未初始化时，locate(idx) 为取一个 style_idx 的轴，会调用 _style_axes() 遍历全部样式。原生 style_axes getter 先克隆所有轴向量及字符串，随后转换为 Python 列表，Python 再构造全部 StyleAxis 元组并长期缓存。对于包含 S 个样式、共 A 个轴值的大型字体目录，即使只定位一个样本且从不读取 metadata，也会新增 O(S+A) 的首次工作和存储；后续调用则命中缓存。这是静态成本分析，未测量实际耗时。",
+            "recommendation": "可让原生 locate 在已经确定 entry 和 instance 时一并返回该样式的轴，Python 只包装这一组数据，将全量转换留给 metadata。这样无需增加缓存机制；需权衡频繁 locate 时逐次包装少量轴的成本。测试可进一步确认单次 locate 不访问全量 style_axes getter，而不只是确认不访问 metadata。"
+          }
+        ],
+        "checked": [
+          "完整读取 src/dataset/entry.rs、src/dataset/mod.rs、tests/test_dataset.py、torchfont/_torchfont.pyi、torchfont/datasets.py、torchfont/metadata.py 的所有差异页。",
+          "对照固定 base/head 的定位与元数据构建实现，检查新增成本，未将既有全量元数据处理列为回归。",
+          "追踪字体加载、实例计数、样式索引、原生定位、Python 轴缓存、metadata 缓存及序列化重建路径。",
+          "检索 locate 调用方并阅读相关测试，检查首次访问与缓存命中后的工作量。",
+          "核对 Cargo.toml 和 Cargo.lock 中的 PyO3 0.28.2，并查阅对应版本上游 Vec 转换实现，确认此处非 u8 向量转换为 Python 列表。"
+        ],
+        "limitations": [
+          "未执行测试、编译、基准或内存测量；复杂度和分配成本均依据静态代码分析。",
+          "仓库未提供生产环境的字体目录规模及 locate 调用频率，因此无法量化该建议的实际收益。",
+          "代码结论基于固定提交读取，未使用可能与固定提交不同的工作区内容。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 6,
+        "compactions": 0,
+        "totalTokens": 126083,
+        "coverage": {
+          "changedFiles": 6,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:src/dataset/entry.rs",
+            "head:src/dataset/mod.rs",
+            "head:torchfont/datasets.py",
+            "head:torchfont/metadata.py",
+            "head:src/dataset/index.rs",
+            "head:Cargo.toml",
+            "base:torchfont/datasets.py",
+            "base:src/dataset/entry.rs",
+            "head:tests/test_dataset.py",
+            "head:src/dataset/reader.rs",
+            "head:Cargo.lock",
+            "head:torchfont/_torchfont.pyi"
+          ],
+          "searches": 5,
+          "toolCalls": 36,
+          "toolErrors": [
+            "fetch_document: Documentation HTTP 404"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "baseline",
+      "id": "torchfont_torchfont-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3/baseline/torchfont_torchfont-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "undocumented-public-style-axes",
+          "classification": "supported_actionable",
+          "reference": "undocumented-public-style-axes",
+          "evaluator_evidence": "datasets.py:365-373 and metadata.py:21 add axes; en/ja reference locate/style_labels field lists omit it. Static empty tuple and user-space semantic match implementation."
+        }
+      ],
+      "nwo": "torchfont/torchfont",
+      "duration_ms": 84091,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "077ee4d6d1f5b6b201cda739ec79d761839c89bca7ae4b5c56985b6f89344d29",
+      "report": {
+        "role": "comments",
+        "base": "5a2c993caa9c1183f58b1cc50aea6a2609d96959",
+        "head": "7604bc745c38d151e23b8f7528a65f74c2613545",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅全部 6 个变更文件及相关实现、调用、测试和 API 参考。发现 1 项非阻断的文档同步建议；未发现新增注释或文档字符串与实现直接矛盾。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "torchfont/metadata.py",
+            "line": 21,
+            "title": "同步 API 参考中的返回结构字段列表",
+            "evidence": "本次为 StyleLabel 和 GlyphLocation 新增了 axes。build_dataset_metadata() 将其写入 StyleLabel，GlyphDataset.locate() 也返回该字段；新增测试覆盖了静态字体的空元组和 Roboto 命名实例的轴值。但 docs/en/reference/datasets.md:99–104、155–160 及对应日文页面仍仅列出旧字段，未说明这两个返回结构现在提供轴设置。",
+            "recommendation": "在 docs/en/reference/datasets.md 的 locate 返回字段列表和 style_labels 字段列表中各补充一项：`- axes（tuple[StyleAxis, ...]）：样式的用户空间变体轴设置；静态样式为 ()。` 实际 Markdown 中为字段名、类型和空元组添加反引号，并按页面语言表述；同步更新 docs/ja/reference/datasets.md 对应列表。可在首次出现处注明 StyleAxis 包含 tag 和 value。无需重复已有的样式索引或标签 ID 说明。"
+          }
+        ],
+        "checked": [
+          "已读取全部变更 diff 页面，并核对新增文档字符串、类型声明及相关完整函数。",
+          "已追踪 FontEntry 的轴值构造、实例计数、样式顺序，以及原生 style_axes getter 到 Python 缓存、locate() 和 metadata 的数据流。",
+          "已阅读静态字体、变量字体、重复样式名称、输入长度校验及 locate 不构建完整 metadata 的相关测试源码。",
+          "已核对英日文 Dataset API 参考及文档站点源配置。",
+          "已根据 Cargo.toml 和 Cargo.lock 确认 skrifa 0.41.0，并查阅对应版本上游源码，核实 user_coords() 返回用户空间坐标及其轴顺序。"
+        ],
+        "limitations": [
+          "仅进行了静态审阅；未执行测试、编译原生扩展或构建文档站点。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 8,
+        "compactions": 0,
+        "totalTokens": 226512,
+        "coverage": {
+          "changedFiles": 6,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:src/dataset/entry.rs",
+            "head:src/dataset/mod.rs",
+            "head:torchfont/metadata.py",
+            "head:torchfont/datasets.py",
+            "head:src/dataset/index.rs",
+            "head:src/dataset/reader.rs",
+            "head:Cargo.toml",
+            "head:docs/en/reference/datasets.md",
+            "head:docs/ja/reference/datasets.md",
+            "head:tests/test_dataset.py",
+            "head:Cargo.lock",
+            "head:torchfont/_torchfont.pyi",
+            "head:docs/.vitepress/config.mts",
+            "head:package.json"
+          ],
+          "searches": 6,
+          "toolCalls": 40,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "controls",
+      "id": "catalog-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/controls/catalog-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "duplicate-model-fetch",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "main.js:312 then331-342 and export-tags.js:134-150 fetch extra details twice. Pure mocked execution confirms two calls become one with equal data."
+        }
+      ],
+      "nwo": "Imageomics/catalog",
+      "duration_ms": 88528,
+      "exit_code": 1,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "58c4da095b1396afe80943aabe4edfa24cad43f91f9e2d2f39da7d75f89e42eb",
+      "report": {
+        "role": "quality",
+        "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+        "head": "ac7e37f323ff31c591a8d9da597bfeac1a2b0580",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "findings",
+        "summary": "发现 1 项可靠性问题：额外模型已经获取的详情会被再次请求，增加网络开销，并可能丢失首次成功取得的数据。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "main.js",
+            "line": 326,
+            "title": "复用额外模型的详情响应，避免重复请求",
+            "evidence": "新增分支通过 `${API_BASE_URL}${repoType}/${entry.repo}` 获取额外仓库后，将响应直接并入 hfItems。对于 models，紧接着的第 330–345 行又遍历整个 hfItems 请求模型详情，因此每个额外模型都会再次访问同一详情端点。第二次请求返回非成功状态时，首次成功取得的模型会被过滤掉；若第二次请求发生网络异常，则整个模型批次进入外层错误处理。scripts/export-tags.js 第 132–153 行存在同样的重复请求，并会在第二次失败时遗漏已有模型标签。相比 base，这是新增额外仓库路径引入的重复网络阶段。",
+            "recommendation": "只对组织列表返回的模型执行原有详情补全，再合并新增分支已经取得的额外仓库详情；同步调整 export-tags.js，避免再次请求或覆盖已经成功取得的数据。"
+          }
+        ],
+        "checked": [
+          "已读取 README.md、main.js、public/config.yaml 和 scripts/export-tags.js 的全部差异页。",
+          "已对照 base 检查 Hugging Face 获取流程、模型详情补全及配置错误回退。",
+          "已跟踪前端缓存、筛选与渲染调用，以及导出脚本到 weekly-tag-scan 工作流的调用链。",
+          "已检查相邻 GitHub 仓库获取实现、构建辅助脚本、配置说明及 package.json。"
+        ],
+        "limitations": [
+          "仅进行了只读静态审查，未运行构建、浏览器交互、网络故障注入或导出脚本。",
+          "仓库未提供测试脚本或测试文件，未执行自动化测试。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 5,
+        "compactions": 0,
+        "totalTokens": 81746,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:main.js",
+            "head:scripts/export-tags.js",
+            "head:package.json",
+            "head:README.md",
+            "head:scripts/fetch-releases.js",
+            "head:.github/workflows/weekly-tag-scan.yml",
+            "head:public/config.yaml",
+            "base:main.js",
+            "head:docs/tag-grouping-process.md",
+            "base:scripts/export-tags.js"
+          ],
+          "searches": 1,
+          "toolCalls": 22,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "controls",
+      "id": "catalog-performance",
+      "raw_report_path": ".local/eval-results/pilot-v3/controls/catalog-performance/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "serial-independent-fetch-batches",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "main.js waits all additionalFullModels before starting org detail batch, despite independent inputs. Parallel batches can preserve merge order. New optional scheduling suggestion, not recurrence of removed duplicate request."
+        }
+      ],
+      "nwo": "Imageomics/catalog",
+      "duration_ms": 66630,
+      "exit_code": 0,
+      "role_prompt_sha256": "a1ded5066b29dbf81a42ea3fb27463d89ad2bc82fd9f3d8a61d065a6607a8ea5",
+      "raw_report_sha256": "4c5ee269599cf7be24a921851183203de0889c61ac2e9601171d8d4a25f1ab0c",
+      "report": {
+        "role": "performance",
+        "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+        "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅全部四个文件的完整差异及相关调用路径。未发现阻断性问题；有一项可选优化，可同时减少模型加载中的状态区分和串行等待。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "main.js",
+            "line": 311,
+            "title": "避免让额外仓库请求阻塞独立的组织模型详情请求",
+            "evidence": "首次执行 fetchHubItems('models') 时，此处先等待全部额外仓库请求完成，随后才在第 335–347 行启动组织模型详情请求。组织列表返回后，两批请求的 URL 都已确定，彼此没有数据依赖。配置了额外模型且额外请求较慢时，这会推迟组织模型加载，并可能延后等待该路径的首屏渲染。scripts/export-tags.js 第 133–153 行也有相同顺序。默认空配置及成功缓存后的访问不受影响；这是静态调度分析，并非实测结果。",
+            "recommendation": "可在组织列表返回后分别启动组织模型详情请求和去重后的额外仓库请求，统一等待后按现有顺序合并，并保留原有失败处理及基于原组织列表的去重规则。额外仓库结果不再进入组织模型详情映射，也就可以省去 additionalFullIds 状态。请求总数不变，但峰值并发会增加，因此应结合 API 限流约束决定是否采用。"
+          }
+        ],
+        "checked": [
+          "完整读取 README.md、main.js、public/config.yaml、scripts/export-tags.js 的所有差异页。",
+          "对照 base/head 的 Hugging Face 请求实现，检查新增去重、结果合并及避免重复获取模型详情的逻辑。",
+          "追踪前端初始化、类型切换、fetchedData 缓存以及过滤和渲染调用路径。",
+          "检查导出脚本的请求辅助函数、主调用顺序、每周扫描工作流，以及配置文档和依赖声明。"
+        ],
+        "limitations": [
+          "未执行测试、构建、浏览器运行或性能基准。",
+          "未测量真实 Hugging Face API 延迟、连接调度、限流行为及大清单下的并发压力；无法量化建议的实际收益。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 6,
+        "compactions": 0,
+        "totalTokens": 84489,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:main.js",
+            "head:scripts/export-tags.js",
+            "head:package.json",
+            "head:README.md",
+            "head:public/config.yaml",
+            "head:.github/workflows/weekly-tag-scan.yml",
+            "base:main.js",
+            "base:scripts/export-tags.js"
+          ],
+          "searches": 3,
+          "toolCalls": 22,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "controls",
+      "id": "wallet-simplify",
+      "raw_report_path": ".local/eval-results/pilot-v3/controls/wallet-simplify/report.json",
+      "judgments": [
+        {
+          "cause": "manual-base64-field",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "webauthn.go536,547 manually base64-encode; zap v1.27.1 json_encoder.go104-105 AddBinary performs identical encoding, console embeds jsonEncoder. Independent actual-version Go test confirms equivalent field output for JSON/console and nil/empty/binary cases. Not recurrence of removed hex conversion.",
+          "index": 0
+        }
+      ],
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "duration_ms": 193574,
+      "exit_code": 0,
+      "role_prompt_sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82",
+      "raw_report_sha256": "9f840c70a0bea224e7ad7d9ec22a231b982b2ce0e6f910af2f5970a17af81bdb",
+      "report": {
+        "role": "simplify",
+        "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+        "head": "56f12e5a58156e62daa1846ccf3062f05a3a7741",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "发现 1 项非阻塞的局部简化建议：新增诊断日志可以复用已有的 zap.Binary，避免重复实现 Base64 字段编码。其余改动未发现有充分等价性依据的简化项。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "internal/service/webauthn.go",
+            "line": 536,
+            "title": "用现有 zap.Binary 替代手动 Base64 编码",
+            "evidence": "第 536、547 行均先调用 base64.StdEncoding.EncodeToString，再包装成 zap.String；同文件第 302 行等位置已经使用 zap.Binary。已核对 go.mod 指定的 zap v1.27.1：其 JSON 编码器对 Binary 字段同样调用 base64.StdEncoding.EncodeToString，console 编码器的结构化字段也使用该实现。因此，对仓库当前配置的 JSON/console 日志，两种写法的字段名和值一致，包括空字节切片。",
+            "recommendation": "分别改为 zap.Binary(\"base64\", v) 和 zap.Binary(\"base64_der\", certBytes)。这样无需增加辅助函数，并可避免日志被过滤时仍提前进行 Base64 转换。在当前日志配置下，日志消息、字段顺序与内容保持不变，也不影响 challenge 消费、用户写入或 ErrVerificationFailed 返回路径。encoding/base64 在其他流程仍有用途，应保留导入。"
+          }
+        ],
+        "checked": [
+          "已读取固定 base/head 范围内 go.mod、go.sum、internal/service/webauthn.go、pkg/config/config.go 的全部差异。",
+          "已读取完整 FinishRegistration、相关构造函数和配置 getter，并检查 BeginRegistration、FinishAddCredential、FinishLogin 等相邻实现及 HTTP 实际调用方。",
+          "已检查相关服务、HTTP 和集成测试及其夹具；本次未修改测试，也没有新增的重复测试机制需要合并。",
+          "已检查 pkg/logging/logging.go、服务端日志构造及同文件既有 zap.Binary 用法。",
+          "已核对版本匹配的 zap v1.27.1 源码： https://raw.githubusercontent.com/uber-go/zap/v1.27.1/field.go 、 https://raw.githubusercontent.com/uber-go/zap/v1.27.1/zapcore/json_encoder.go 、 https://raw.githubusercontent.com/uber-go/zap/v1.27.1/zapcore/console_encoder.go 。",
+          "已检查 go-webauthn v0.16.3 的 go.mod 和 registration.go，以确认所调用注册 API 的实现上下文。"
+        ],
+        "limitations": [
+          "未执行测试、构建或硬件验证；没有修改任何文件。",
+          "上述日志等价性结论针对仓库现有 JSON/console 编码器。外部注入的自定义 zap core/encoder 可能区分 String 与 Binary 字段类型，其兼容性未验证。",
+          "相关服务测试使用 zap.NewNop，未覆盖新增诊断日志的输出契约；本次静态审查也不能证明依赖从 fork 切回上游后的全部运行时兼容性。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 10,
+        "compactions": 1,
+        "totalTokens": 446615,
+        "coverage": {
+          "changedFiles": 4,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:internal/service/webauthn.go",
+            "head:pkg/config/config.go",
+            "head:go.mod",
+            "head:internal/api/handlers.go",
+            "head:internal/service/webauthn_test.go",
+            "head:pkg/logging/logging.go",
+            "head:internal/api/handlers_test.go",
+            "head:internal/service/services.go",
+            "head:cmd/server/main.go",
+            "head:tests/integration/webauthn_flow_test.go",
+            "head:tests/integration/webauthn_test.go"
+          ],
+          "searches": 17,
+          "toolCalls": 60,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "controls",
+      "id": "mcp-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3/controls/mcp-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "npm-dist-exclusion",
+          "classification": "unsupported_incorrect",
+          "reference": null,
+          "evaluator_evidence": "Counterexample with actual npm10.8.2 from registry.npmjs.org/npm/-/npm-10.8.2.tgz: same main/bin/ignore config and inert compiled files, lifecycle scripts removed, pack --dry-run contains dist/index.js, dist/loader.js and dist/tools/get_api_details.js. npm11.20.0 also includes them. This directly contradicts claimed packlist exclusion, without asserting full Git-install success. Initial npm10 attempt unexpectedly invoked prepare despite --ignore-scripts and failed on placeholder input; final probe explicitly strips scripts."
+        },
+        {
+          "index": 1,
+          "cause": "mcp-config-filename",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+        }
+      ],
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "duration_ms": 258816,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "95553cd7badfa2baefc5a389e83079e9fe46c4ea5af96979eb383e0d423cc7f2",
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "9c4c029a556a0e26389dc1b385d900c46acb023d",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审阅 README.md 的完整差异，并追踪启动流程、工具实现和打包配置。发现两处会误导安装或客户端配置的文档正确性问题；以下均为咨询性建议。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 10,
+            "title": "当前打包配置不支持文档推广的直接 npx 启动方式",
+            "evidence": "package.json:5–11 声明 dist/index.js 为入口，并通过 prepare 执行 tsc，但 .gitignore:2 排除了 dist/，仓库没有 files 白名单或 .npmignore。依据已检查的 npm 10.8.2 Git 安装和 npm-packlist 实现，prepare 后仍需按忽略规则打包；main/bin 的强制包含例外只覆盖入口文件，不覆盖 src/index.ts:9–14 导入的 loader 和 tools 编译模块。因此，从该提交全新安装时，这些运行所需模块会被排除。README:29、47、62、78 的客户端示例也依赖同一启动方式。",
+            "recommendation": "在打包配置包含完整运行产物并完成验证前，将第 7–11 行替换为：Build from source using [Local development](#local-development), then configure your MCP client to run the built `dist/index.js` with `node`. 各客户端示例保留各自的外层结构，但将 command/args 改为现有 Local development 小节中的 node 加绝对路径方案。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 55,
+            "title": "Claude Code 的项目配置文件名缺少前导点",
+            "evidence": "此处要求创建 mcp.json，但 Claude Code 官方 MCP 文档明确说明：项目级配置应位于项目根目录的 .mcp.json，并使用 mcpServers 包装对象。当前示例的 JSON 结构符合该约定，但按这里的文件名保存不会被作为默认项目级配置发现。参考：https://code.claude.com/docs/en/mcp.md。",
+            "recommendation": "将该行改为：Add to your project's `.mcp.json` file at the project root (create it if it doesn't exist):"
+          }
+        ],
+        "checked": [
+          "已读取 README.md 全部差异页，并核对 head 中的源文件行号。",
+          "已检查 src/index.ts 的五个工具 schema、调用分派和 stdio 启动流程，以及 loader、搜索实现和全部工具实现。",
+          "已检查 package.json、tsconfig.json、.gitignore、锁文件中的相关声明及固定提交的文件清单。",
+          "已核对 npm 10.8.2 的 package-json/scripts 文档及 pacote GitFetcher、DirFetcher、npm-packlist 源码：https://github.com/npm/cli/tree/v10.8.2。",
+          "已核对 Claude Code 官方文档中的项目级 MCP 配置文件名和 JSON 结构。"
+        ],
+        "limitations": [
+          "未执行 npm install、npx、构建、测试或客户端连接，也未检查实际生成的安装包；打包问题依据固定提交配置和 npm 10.8.2 源码推导。",
+          "仓库未固定 npm 或 MCP 客户端版本；未对所有 npm 版本及各客户端的历史版本进行兼容性验证。Claude Code 文件名依据当前官方文档核对。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 18,
+        "compactions": 1,
+        "totalTokens": 635005,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/index.ts",
+            "head:src/loader.ts",
+            "head:src/search.ts",
+            "head:package-lock.json",
+            "head:tsconfig.json",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:src/tools/get_server_info.ts",
+            "head:src/tools/search_graph_apis.ts",
+            "head:.gitignore",
+            "base:README.md"
+          ],
+          "searches": 2,
+          "toolCalls": 72,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers.md\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.npmjs.com/cli/v10/using-npm/scripts\". For more information, pass `verbose: true` in the second argument to fetch()"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "repeat",
+      "id": "AA-Factory_aafactory-prototype-quality",
+      "raw_report_path": ".local/eval-results/pilot-v3/repeat/AA-Factory_aafactory-prototype-quality/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "tests-call-mock",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "test_mock_chat.py:18-35 calls the newly patched mock; side_effect itself mutates history. interface.py:77-94 is the uncalled production orchestration."
+        },
+        {
+          "index": 1,
+          "cause": "unpatched-local-alias",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "test_mock_chat.py:2 imports the loader before module attribute patch at 25-31; line33 retains original alias; interface.py:55 onward accesses database."
+        },
+        {
+          "index": 2,
+          "cause": "missing-pytest-plugins",
+          "classification": "supported_actionable",
+          "reference": "missing-pytest-plugins",
+          "evaluator_evidence": "pyproject.toml dev deps and lock lack installed plugin packages for mocker/pytest.mark.asyncio; extra declarations are not installed dependencies."
+        }
+      ],
+      "nwo": "AA-Factory/aafactory-prototype",
+      "duration_ms": 80901,
+      "exit_code": 1,
+      "role_prompt_sha256": "3d07df29b3f5d39cdb1c756668048c5b3c8c9581aa9525478edb66db9b4e8c59",
+      "raw_report_sha256": "22b45c934661981d8a9e5b1bf8af5ba9177a3519459430c7ca21e38276fc6624",
+      "report": {
+        "role": "quality",
+        "base": "e7f558c7360abac335af2df22f4ed376992b30ab",
+        "head": "a1978cb75950a879df8805e4a5f373eb6678f6f9",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "findings",
+        "summary": "已审阅完整差异及相关实现，发现 3 项影响新增测试可靠性与可复现性的问题。",
+        "findings": [
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 35,
+            "title": "应调用真实编排函数，而不是直接验证 mock",
+            "evidence": "这里调用的是第 18–22 行已经替换的 send_request_to_open_ai，返回值和 CHAT_HISTORY 更新全部由测试自己的 llm_side_effect 生成。实际负责消息构造、语音生成、视频生成及历史更新的 chat/interface.py:77–94 中的 send_request_to_llm 从未执行。因此，即使真实编排逻辑被破坏，只要数据库加载成功，这些断言仍然可以通过。",
+            "recommendation": "调用 chat_interface.send_request_to_llm；让 OpenAI mock 仅返回回答文本，移除其修改历史及返回编排结果的副作用，同时 mock 所选 elevenlabs 分支的语音生成依赖，由真实编排函数完成历史更新和结果组装。"
+          },
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 33,
+            "title": "头像加载调用绕过了补丁，仍会访问真实数据库",
+            "evidence": "第 2 行通过 from-import 保存了原始 _load_avatar_infos_for_chat 引用，而第 25–31 行仅替换 chat_interface 模块上的同名属性；这里的本地引用不会随之改变。原始函数会执行 TinyDB(DB_PATH) 并读取应用数据库，而不是使用测试提供的头像数据，使该单元测试依赖本机数据库状态，可能在进入断言前失败。",
+            "recommendation": "改为调用 chat_interface._load_avatar_infos_for_chat()，使调用命中现有补丁；如果头像加载不属于本测试范围，也可直接使用固定头像数据，删除不必要的加载器补丁。"
+          },
+          {
+            "severity": "blocking",
+            "path": "aafactory/src/tests/test_chat/test_mock_chat.py",
+            "line": 6,
+            "title": "新增测试依赖的 pytest 插件未声明",
+            "evidence": "测试新增了 mocker fixture 和 @pytest.mark.asyncio，但根 pyproject.toml 的开发依赖只有 pytest、pytest-cov，poetry.lock 也没有 pytest-mock 或 pytest-asyncio 的包条目，仓库内没有自定义 mocker fixture。仅按仓库声明安装的全新环境无法提供 mocker；即使单独补上它，现有 AnyIO 4.7.0 插件也不会处理此 asyncio 标记。",
+            "recommendation": "将 pytest-mock 和 pytest-asyncio 声明为开发依赖并通过依赖工具更新锁文件，确保仅按仓库依赖安装即可执行此测试。"
+          }
+        ],
+        "checked": [
+          "已读取新增文件的全部差异，并核对 head 源码行号。",
+          "已对照 base/head 的聊天编排实现，追踪头像加载、OpenAI 请求、语音生成及 CHAT_HISTORY 的实际职责。",
+          "已检查相邻测试、测试配置、依赖清单、锁文件及 fixture 定义。",
+          "已核对 pytest 8.3.5、AnyIO 4.7.0 的上游源码和 pytest-mock 的 fixture 文档。"
+        ],
+        "limitations": [
+          "未执行 pytest 或安装依赖；上述结论来自静态审阅。",
+          "未验证开发机器是否额外安装插件；依赖问题针对仅按仓库声明安装的全新环境。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 9,
+        "compactions": 0,
+        "totalTokens": 256734,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:aafactory/src/aafactory/chat/interface.py",
+            "head:aafactory/src/tests/test_chat/test_chat_interface.py",
+            "head:pyproject.toml",
+            "head:aafactory/src/tests/test_configuration.py",
+            "head:aafactory/src/aafactory/fetcher/fetching.py",
+            "head:aafactory/src/aafactory/configuration.py",
+            "head:aafactory/src/aafactory/database/manage_db.py",
+            "head:poetry.lock",
+            "head:aafactory/src/tests/test_chat/test_mock_chat.py",
+            "base:aafactory/src/aafactory/chat/interface.py",
+            "head:cloud_setup/pyproject.toml",
+            "head:cloud_setup/sonic/pyproject.toml",
+            "head:cloud_setup/zonos/pyproject.toml",
+            "head:aafactory/src/aafactory/utils/voice.py",
+            "base:aafactory/src/tests/test_chat/test_chat_interface.py"
+          ],
+          "searches": 16,
+          "toolCalls": 39,
+          "toolErrors": []
+        }
+      }
+    },
+    {
+      "phase": "repeat",
+      "id": "UniverseCitiz3n_msgraph-kb-mcp-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3/repeat/UniverseCitiz3n_msgraph-kb-mcp-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "mcp-config-filename",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+        },
+        {
+          "index": 1,
+          "cause": "false-auto-recovery",
+          "classification": "supported_actionable",
+          "reference": "false-auto-recovery",
+          "evaluator_evidence": "index.ts:19 loadIndex once; loader.ts:208-223 returns before cachedIndex assignment; getIndex cannot refresh. README134 waiting wording omits required restart."
+        }
+      ],
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "duration_ms": 204856,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "69f70de1a4dd0ad5170391d2fc074654f3504bed248fb1a23680059a9eede6b5",
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "发现 2 项文档正确性问题，均为建议性修正；未修改文件。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 55,
+            "title": "Claude Code 的项目配置文件名缺少前导点",
+            "evidence": "此处要求将配置写入项目的 `mcp.json`，但 Claude Code 官方 MCP 文档明确使用项目根目录的 `.mcp.json`，其中顶层键为 `mcpServers`。按当前说明创建无前导点的文件，不符合客户端的项目级自动加载约定。依据：https://code.claude.com/docs/en/mcp.md 中的项目级配置说明。",
+            "recommendation": "将本句替换为：“在项目根目录的 `.mcp.json` 文件中添加以下配置（如不存在则创建）：”。现有 JSON 示例无需因此修改。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 134,
+            "title": "明确克隆失败后需要重启，避免暗示会自动恢复",
+            "evidence": "“until data is available”容易让读者以为等待或恢复网络后即可继续使用。实际上，`src/index.ts:19` 仅在启动时调用一次 `loadIndex()`；`src/loader.ts:208–223` 的失败分支返回时没有设置缓存，缓存仅在成功路径的第 261 行赋值。后续工具请求只调用 `getIndex()`（`src/index.ts:118–120`），没有重试或重新加载入口。因此，同一进程不会因外部故障解除而恢复数据。",
+            "recommendation": "保留临时目录说明，将第二句替换为：“如果克隆失败，服务器仍会启动，但工具会返回说明性错误。服务器不会自动重试；检查服务器日志并排除克隆失败的原因后，请重启服务器以重新加载数据。”"
+          }
+        ],
+        "checked": [
+          "已阅读 README.md 的全部固定差异页，并核对 head 的实际源文件行号。",
+          "已追踪启动、克隆、缓存、清理、工具路由及全部工具实现，并核对输入 schema 与 README 工具表。",
+          "已检查 package.json、相关锁文件条目、TypeScript 配置和忽略规则，以审查安装与构建说明。",
+          "已对照官方资料检查 VS Code、Claude Desktop、Claude Code 和 GitHub Copilot 仓库级 MCP 配置格式与位置。"
+        ],
+        "limitations": [
+          "未执行安装、构建、npm 打包、npx 启动或客户端连接，也未运行测试；未验证生成产物和实际发布包内容。",
+          "仓库未固定各 MCP 客户端版本；客户端配置核对依据所访问的官方文档，未验证全部历史版本。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 14,
+        "compactions": 1,
+        "totalTokens": 448405,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/index.ts",
+            "head:src/loader.ts",
+            "head:src/search.ts",
+            "head:tsconfig.json",
+            "head:.gitignore",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/get_server_info.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:src/tools/search_graph_apis.ts",
+            "head:package-lock.json"
+          ],
+          "searches": 2,
+          "toolCalls": 55,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.npmjs.com/cli/v10/configuring-npm/package-json\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/quickstart/user.md\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/agents/copilot-coding-agent/extending-copilot-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "targeted-repeat",
+      "id": "Tzeusy_butlers-simplify",
+      "raw_report_path": ".local/eval-results/pilot-v3-repeat/baseline/Tzeusy_butlers-simplify/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "duplicated-runtime-fixtures",
+          "classification": "supported_optional",
+          "reference": "duplicated-runtime-fixtures",
+          "evaluator_evidence": "Identical runtime row/dispatch factories recur across changed daemon tests; schema contract common, butler_name parameter handles differing defaults. Shared helper suggestion is bounded."
+        },
+        {
+          "index": 1,
+          "cause": "redundant-missing-id-factory",
+          "classification": "supported_optional",
+          "reference": null,
+          "evaluator_evidence": "test_notify_contact_id.py:311-339 duplicates _patch_infra default DB mocks at80-116 then replaces them. Sole call346 ignores returned DB/pool later. Valid local deletion, different root cause from cross-file runtime factory reuse."
+        }
+      ],
+      "nwo": "Tzeusy/butlers",
+      "duration_ms": 156758,
+      "exit_code": 0,
+      "role_prompt_sha256": "639260ff93a741e2b1f2deeb7ad042d8a07f493c62fda8c22c7d8586d474ad82",
+      "raw_report_sha256": "b72bef3e4c011b6c77dc33c80b7fe1f75606b97b4ac10507321bbe1a48ac2d4a",
+      "report": {
+        "role": "simplify",
+        "base": "b57517a5f8daf3b4e776884589ffedb35018b5d4",
+        "head": "403e15fe7702ac03ac466dedd11e49f9d6ce7d66",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "发现两处可保持现有行为的简化机会，均为非阻塞建议：集中重复的 runtime_config 模拟契约，以及删除一个已与默认基础设施配置等价的专用初始化函数。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_daemon.py",
+            "line": 255,
+            "title": "集中七个测试文件中重复的 runtime_config 查询模拟",
+            "evidence": "七个变更文件都新增了相同的 _make_runtime_config_row 和 _make_fetchrow_side_effect：十个字段及 SQL 子串分派逻辑完全一致，仅 butler_name 默认值不同。行构造函数也都只被对应的 side_effect 调用。这使同一个当前查询契约需要维护七份，而各文件的基础设施 patch 和专用连接行为确实存在差异。",
+            "recommendation": "将这对函数收敛为一个共享的、以 butler_name 为参数的测试工厂，例如 make_runtime_config_fetchrow(butler_name)，由它返回异步 side_effect；各处继续使用 AsyncMock(side_effect=...)。保留现有的 test-butler、health、switchboard 取值、匹配查询时逐次创建新字典、非匹配查询返回 None，以及原有参数接收方式。这样既保持查询结果、未命中路径及测试状态隔离，也无需统一各文件不同的数据库 patch、审计池或专用 resolver 连接。"
+          },
+          {
+            "severity": "suggestion",
+            "path": "tests/daemon/test_notify_contact_id.py",
+            "line": 311,
+            "title": "删除缺少标识符测试中不再具有特殊行为的初始化层",
+            "evidence": "_make_missing_id_patches 当前构造的连接、池和数据库属性，与同文件 _patch_infra() 的默认配置相同；它随后又调用 _patch_infra()，再覆盖刚创建的 db_from_env patch。全仓搜索只有第 346 行一个调用点，返回的 mock_pool、mock_db 都没有被后续测试使用，butler_dir 参数也未使用。该测试实际依赖的是 notify 的返回值、resolver 调用和 switchboard 调用断言。",
+            "recommendation": "在唯一调用点直接写 patches = _patch_infra()，保留后续 _start_daemon_with_notify(butler_dir, patches)，并删除 _make_missing_id_patches。这样减少一套重复 mock 构造、一次 patch 覆盖以及无用的返回元组。实际交给 daemon 的数据库与连接配置不变，查询返回值、异常处理和现有断言仍走相同路径；用于验证专用查询返回值或错误的 _make_pool_with_conn 则继续保留。"
+          }
+        ],
+        "checked": [
+          "已读取全部七个固定范围文件的完整差异及完整 head 文件，核对受影响辅助函数和测试调用点。",
+          "已检查 src/butlers/core/runtime_config.py 及 tests/core/test_runtime_config.py，核对行字段、查询、缓存和失败路径；未建议合并默认值不同的核心测试数据工厂。",
+          "已检查 daemon 的启动、owner 初始化、审计池、凭据库和关闭相关实现，以及 tests/daemon/test_owner_bootstrap.py 的专用连接模拟。",
+          "已检查 tests/conftest.py、src/butlers/testing/shared_fixtures.py 和 pyproject.toml，并搜索上述辅助函数的仓库调用点。",
+          "证据均来自固定 base/head 快照；未修改文件或执行测试。"
+        ],
+        "limitations": [
+          "等价性结论基于静态源码和现有断言检查，未验证实际测试运行结果。",
+          "建议不依赖未经验证的 asyncpg 或 AsyncMock 默认行为，也不改变现有连接获取方式。",
+          "固定快照中未发现 SOURCES.md；本报告通过 checked 记录所用来源，未创建文件。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 10,
+        "compactions": 1,
+        "totalTokens": 366901,
+        "coverage": {
+          "changedFiles": 7,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:tests/daemon/test_daemon.py",
+            "head:tests/daemon/test_graceful_shutdown.py",
+            "head:tests/daemon/test_liveness_reporter.py",
+            "head:tests/daemon/test_notify_contact_id.py",
+            "head:tests/daemon/test_notify_react.py",
+            "head:tests/daemon/test_route_execute_trace_decoupling.py",
+            "head:tests/daemon/test_route_to_butler_accepted_status.py",
+            "head:tests/conftest.py",
+            "head:conftest.py",
+            "head:pyproject.toml",
+            "head:src/butlers/core/runtime_config.py",
+            "head:tests/core/test_runtime_config.py",
+            "head:src/butlers/daemon.py",
+            "head:tests/daemon/test_owner_bootstrap.py",
+            "head:tests/daemon/test_tool_gating.py",
+            "head:src/butlers/testing/shared_fixtures.py"
+          ],
+          "searches": 15,
+          "toolCalls": 74,
+          "toolErrors": [
+            "read_file: Invalid offset",
+            "read_file: Invalid offset",
+            "read_file: Invalid offset"
+          ]
+        }
+      }
+    },
+    {
+      "phase": "targeted-repeat",
+      "id": "mcp-comments",
+      "raw_report_path": ".local/eval-results/pilot-v3-repeat/controls/mcp-comments/report.json",
+      "judgments": [
+        {
+          "index": 0,
+          "cause": "mcp-config-filename",
+          "classification": "supported_actionable",
+          "reference": null,
+          "evaluator_evidence": "README:55 mcp.json versus official project .mcp.json. Evaluator independently checked https://code.claude.com/docs/en/mcp#project-scope; reviewer disclosed no online validation."
+        }
+      ],
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "duration_ms": 294989,
+      "exit_code": 0,
+      "role_prompt_sha256": "5baee43be5d96fec62c17743bbe2bbb0042d2bfa5f9f08a87490d2e1cc41b7a6",
+      "raw_report_sha256": "603c8a32ef1693ea6639841a6b0721905db4dde07c58e39f3a42d6647e55809e",
+      "report": {
+        "role": "comments",
+        "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+        "head": "9c4c029a556a0e26389dc1b385d900c46acb023d",
+        "requestedModel": "gpt-6.1-sol",
+        "effort": "high",
+        "maxTurns": 30,
+        "toolSets": [
+          "snapshot",
+          "workspace",
+          "web"
+        ],
+        "excludedInstructionFiles": [],
+        "status": "pass",
+        "summary": "已审查 README 的完整差异及相关实现，发现 1 处配置文件名错误。以下为非阻断建议。",
+        "findings": [
+          {
+            "severity": "suggestion",
+            "path": "README.md",
+            "line": 55,
+            "title": "正确性：Claude Code 项目配置文件名缺少前导点",
+            "evidence": "改写后的说明仍要求把配置写入项目的 `mcp.json`。Claude Code 官方 MCP 文档规定，项目级服务器配置应放在项目根目录的 `.mcp.json`，并使用本节示例中的 `mcpServers` 包装。按当前文件名操作，不会通过默认的项目配置发现机制加载该服务器；README 也未提供显式加载自定义配置文件的命令。依据：https://code.claude.com/docs/en/mcp.md（项目级配置说明）。",
+            "recommendation": "将本行替换为：将以下配置添加到项目根目录的 `.mcp.json` 文件中（若不存在则创建）："
+          }
+        ],
+        "checked": [
+          "完整读取 README.md 的全部差异，并核对 head 中的源文件行号。",
+          "追踪服务器入口、stdio 连接、五个工具的声明与实现，以及索引加载、失败降级和清理流程。",
+          "核对 package.json、锁文件相关依赖、tsconfig.json、忽略规则及本地构建示例。",
+          "查阅 Claude Code、Claude Desktop、VS Code 和 GitHub Copilot 的官方配置资料，并检查 npm Git 安装的 prepare 与打包规则。"
+        ],
+        "limitations": [
+          "未执行安装、构建、测试、打包或客户端连接；未验证 npx 实际安装后的包内容及启动结果。",
+          "仓库未固定 MCP 客户端或 npm 版本；外部客户端契约按查阅到的官方文档核对，npm 源码核对范围为 10.9.2。",
+          "README 的 GitHub 命令未固定提交，本次未验证其运行时取得的远端默认分支是否与被审查的 head 一致。"
+        ],
+        "actualModels": [
+          "gpt-6.1-sol"
+        ],
+        "turns": 16,
+        "compactions": 1,
+        "totalTokens": 604048,
+        "coverage": {
+          "changedFiles": 1,
+          "unreadDiff": [],
+          "readFiles": [
+            "head:README.md",
+            "head:package.json",
+            "head:src/index.ts",
+            "head:src/loader.ts",
+            "head:src/search.ts",
+            "head:package-lock.json",
+            "head:tsconfig.json",
+            "head:src/tools/get_api_sample.ts",
+            "head:src/tools/get_api_details.ts",
+            "head:src/tools/list_permissions.ts",
+            "head:src/tools/search_graph_apis.ts",
+            "head:src/tools/get_server_info.ts",
+            "head:.gitignore",
+            "base:README.md"
+          ],
+          "searches": 2,
+          "toolCalls": 65,
+          "toolErrors": [
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://code.visualstudio.com/docs/copilot/customization/mcp-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/extend-coding-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/quickstart/user\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/extend-cloud-agent-with-mcp\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: UnexpectedRedirect fetching \"https://modelcontextprotocol.io/docs/develop/connect-local-servers\". For more information, pass `verbose: true` in the second argument to fetch()",
+            "fetch_document: Documentation HTTP 404"
+          ]
+        }
+      }
+    }
+  ],
+  "controls": [
+    {
+      "id": "catalog-quality",
+      "nwo": "Imageomics/catalog",
+      "role": "quality",
+      "target": "silent-extra-repo-errors",
+      "repo": ".local/eval-controls/catalog-quality",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "originalHead": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "head": "ac7e37f323ff31c591a8d9da597bfeac1a2b0580",
+      "changed": [
+        "scripts/export-tags.js"
+      ]
+    },
+    {
+      "id": "catalog-performance",
+      "nwo": "Imageomics/catalog",
+      "role": "performance",
+      "target": "duplicate-model-fetch",
+      "repo": ".local/eval-controls/catalog-performance",
+      "base": "5f10688a0afd8b2891d6cec32f0c3bfca9a7aaed",
+      "originalHead": "a8a7cdc7b0cbac54485dbcf53cf6ae6ddbecfe92",
+      "head": "381bdda6bc8e1c406050876c5609dcf8e48aff9e",
+      "changed": [
+        "main.js",
+        "scripts/export-tags.js"
+      ]
+    },
+    {
+      "id": "wallet-simplify",
+      "nwo": "sirosfoundation/go-wallet-backend",
+      "role": "simplify",
+      "target": "redundant-hex-byte-conversion",
+      "repo": ".local/eval-controls/wallet-simplify",
+      "base": "a1485bf4cd0f0a25cbd5b5c352bbc8dd595a530b",
+      "originalHead": "28ffb41aa8c3db76a718f7c712a47977223f0d25",
+      "head": "56f12e5a58156e62daa1846ccf3062f05a3a7741",
+      "changed": [
+        "internal/service/webauthn.go"
+      ]
+    },
+    {
+      "id": "mcp-comments",
+      "nwo": "UniverseCitiz3n/msgraph-kb-mcp",
+      "role": "comments",
+      "target": "false-auto-recovery",
+      "repo": ".local/eval-controls/mcp-comments",
+      "base": "fe5c686da4a817ca861f284f49f7820d7ea9dac9",
+      "originalHead": "3e0bfe7268cfd621c2030d7259ea83a67b043767",
+      "head": "9c4c029a556a0e26389dc1b385d900c46acb023d",
+      "changed": [
+        "README.md"
+      ]
+    }
+  ],
+  "experiments": {
+    "duplicate_fetch_and_logging": [
+      {
+        "file": "main.js",
+        "baselineCalls": 2,
+        "repairedCalls": 1,
+        "equalResult": true
+      },
+      {
+        "file": "scripts/export-tags.js",
+        "baselineCalls": 2,
+        "repairedCalls": 1,
+        "equalResult": true
+      },
+      {
+        "baselineWarnings": 0,
+        "repairedWarnings": 1,
+        "equalResult": true
+      }
+    ],
+    "npm_pack_probe": {
+      "npm": "11.20.0",
+      "node": "26.13.0",
+      "command": "npm pack --dry-run --ignore-scripts --json",
+      "files": [
+        "dist/index.js",
+        "dist/loader.js",
+        "dist/tools/get_api_details.js",
+        "package.json"
+      ],
+      "limitation": "Inert placeholder compiled files, actual package metadata; not full npx installation. No target code executed."
+    }
+  }
+}

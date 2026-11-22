@@ -1,0 +1,148 @@
+{
+  "notificationGuideProbe": [
+    {
+      "caseId": "guide-before",
+      "requestBody": {
+        "channel": "email"
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 400,
+        "body": {
+          "error": "invalid_channel"
+        }
+      },
+      "correctedRequest": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "fixtureTests": "pass"
+    },
+    {
+      "caseId": "guide-revised",
+      "requestBody": {
+        "delivery": {
+          "channel": "email"
+        }
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "correctedRequest": null,
+      "fixtureTests": "pass"
+    },
+    {
+      "caseId": "wording",
+      "requestBody": {
+        "channel": "email"
+      },
+      "documentedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "observedResult": {
+        "status": 201,
+        "body": {
+          "data": {
+            "channel": "email"
+          }
+        }
+      },
+      "correctedRequest": null,
+      "fixtureTests": "pass"
+    }
+  ],
+  "retryDelayGuideProbe": [
+    {
+      "caseId": "retry-delay-wrong",
+      "firstStatus": 429,
+      "seconds": "5",
+      "delayMs": 5,
+      "retryStatus": 429
+    },
+    {
+      "caseId": "retry-delay-correct",
+      "firstStatus": 429,
+      "seconds": "5",
+      "delayMs": 5000,
+      "retryStatus": 200
+    }
+  ],
+  "mcpGuideJsonExamples": {
+    "mcp-original": {
+      "parsedJsonExamples": 5
+    },
+    "mcp-restart-doc": {
+      "parsedJsonExamples": 5
+    }
+  },
+  "inertNpmPackProbe": {
+    "npm": "11.20.0",
+    "node": "v26.13.1",
+    "files": [
+      "dist/index.js",
+      "dist/loader.js",
+      "dist/tools/get_api_details.js",
+      "package.json"
+    ]
+  },
+  "wellnessTranslatorProbe": [
+    "80a6ace5ce2cf83655f41507a7c59e423809c9cc outage: rejected_non_primary_sender -> ok; directory queries=2; writes=1",
+    "ef80c60bd0c2a2de1266ab5b556ecea9bf5c002a outage: rejected_non_owner_sender -> rejected_non_owner_sender; directory queries=1; writes=0",
+    "6f28715d6a81b15a7d54b360d29409cf4cc8f43b outage: rejected_non_owner_sender -> ok; directory queries=2; writes=1",
+    "6f28715d6a81b15a7d54b360d29409cf4cc8f43b empty: rejected_non_owner_sender -> rejected_non_owner_sender; directory queries=1; writes=0",
+    "80a6ace5ce2cf83655f41507a7c59e423809c9cc connector format outage: rejected_non_primary_sender -> skipped_unknown_predicate; directory queries=2; writes=0",
+    "ef80c60bd0c2a2de1266ab5b556ecea9bf5c002a connector format outage: rejected_non_owner_sender -> rejected_non_owner_sender; directory queries=1; writes=0",
+    "6f28715d6a81b15a7d54b360d29409cf4cc8f43b connector format outage: rejected_non_owner_sender -> skipped_unknown_predicate; directory queries=2; writes=0"
+  ],
+  "keyReplacementTextRound4": {
+    "notificationRequestParsed": {
+      "delivery": {
+        "channel": "email"
+      }
+    },
+    "retryDelaySnippetMatchesSuccessfulProbe": "const delayMs = Number(response.headers.get(\"Retry-After\")) * 1000;",
+    "mcpFilenameLiteral": ".mcp.json",
+    "butlersStatusLiteral": "rejected_non_owner_sender",
+    "reportControlCharacters": 0
+  },
+  "keyReplacementTextRound6": {
+    "notificationRequestParsed": {
+      "delivery": {
+        "channel": "email"
+      }
+    },
+    "retryDelaySnippetMatchesSuccessfulProbe": "const delayMs = Number(response.headers.get(\"Retry-After\")) * 1000;",
+    "mcpFilenameLiteral": ".mcp.json",
+    "butlersStatusLiteral": "rejected_non_owner_sender",
+    "reportControlCharacters": 0
+  }
+}
