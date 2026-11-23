@@ -1,9 +1,10 @@
 import { test, expect } from "bun:test";
-import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Repo } from "../src/repo";
 import { validateReport } from "../src/report";
+import { detectDiffPitfallLanguages } from "../src/runner";
 test("pinned reads, complete pagination and no worktree contamination", () => {
   const dir = mkdtempSync(join(tmpdir(), "review-test-"));
   const git = (...args: string[]) => {
@@ -73,4 +74,19 @@ test("unread diffs never pass and blocking findings determine exit state", () =>
       [],
     ).status,
   ).toBe("findings");
+});
+
+test("detectDiffPitfallLanguages selects only matching Go/TS/Python pitfall checklists", () => {
+  expect(detectDiffPitfallLanguages(["internal/service.go"])).toEqual(["go"]);
+  expect(detectDiffPitfallLanguages(["src/app.tsx", "web/Page.svelte"])).toEqual(["ts"]);
+  expect(detectDiffPitfallLanguages(["api/routes.py"])).toEqual(["python"]);
+  expect(detectDiffPitfallLanguages(["cmd/main.go", "worker/task.py"])).toEqual(["go", "python"]);
+  expect(detectDiffPitfallLanguages(["README.md", "deploy.yaml"])).toEqual([]);
+
+  const pitfallsDir = join(import.meta.dir, "..", "prompts", "lang-pitfalls");
+  for (const lang of ["go", "ts", "python"]) {
+    const p = join(pitfallsDir, `${lang}.md`);
+    expect(existsSync(p)).toBe(true);
+    expect(readFileSync(p, "utf8").trim().length).toBeGreaterThan(100);
+  }
 });
