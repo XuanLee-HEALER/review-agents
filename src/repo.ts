@@ -1,5 +1,13 @@
 import { realpathSync } from "node:fs";
 
+export function snapshotGitEnv() {
+  const env = { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_PAGER: "cat" } as NodeJS.ProcessEnv;
+  for (const key of ["GIT_DIR", "GIT_COMMON_DIR", "GIT_WORK_TREE", "GIT_IMPLICIT_WORK_TREE", "GIT_INDEX_FILE",
+    "GIT_OBJECT_DIRECTORY", "GIT_ALTERNATE_OBJECT_DIRECTORIES", "GIT_NAMESPACE", "GIT_PREFIX",
+    "GIT_SHALLOW_FILE", "GIT_GRAFT_FILE", "GIT_REPLACE_REF_BASE"]) delete env[key];
+  return env;
+}
+
 export class Repo {
   root: string;
   base: string;
@@ -44,7 +52,7 @@ export class Repo {
       {
         stdout: "pipe",
         stderr: "pipe",
-        env: { ...process.env, GIT_OPTIONAL_LOCKS: "0", GIT_PAGER: "cat" },
+        env: snapshotGitEnv(),
         timeout: 20000,
         maxBuffer: 32 * 1024 * 1024,
       },

@@ -17,7 +17,7 @@ description: 使用独立 CLI 对固定提交范围进行注释和接口文档�
 /path/to/review-agents/bin/review-comments --repo /work/project --base BASE_SHA --head HEAD_SHA --model gpt-6.2-sol --effort medium --tool-sets snapshot,workspace,web --task /task-output/comments --out /task-output/comments.json
 ```
 
-新任务模型只接受 `gpt-6.2-astra`、`gpt-6.2-sol`（均为 6.2 系列）、`gpt-6.1-terra`（6.1 系列）；`--effort` 只接受 `medium/high`，CLI 新任务默认 Sol/medium。旧任务续跑沿用已保存的模型 ID，包括旧版 Sol 和 Astra。effort 控制审查 Responses 请求；SDK compaction 仅接受模型，不提供 reasoning effort 参数。工作台调用方须按工作台 AGENTS.md 与 .workbench/models.toml 显式传入两项，常规 standard、机械 mechanical，deep 需具体理由，局部明确任务 medium、复杂调用链或深度边界分析 high；不继承主会话配置，也不把示例当作所有任务的固定选择。
+新任务支持工作台 `.workbench/models.toml` 配置的模型 ID，以及内置的 `gpt-6.2-astra`、`gpt-6.2-sol`、`gpt-6.1-terra`；`--effort` 只接受 `medium/high`，CLI 新任务默认 Sol/medium。旧任务续跑沿用已保存的模型 ID，包括旧版 Sol 和 Astra。effort 控制审查 Responses 请求；SDK compaction 仅接受模型，不提供 reasoning effort 参数。工作台调用方须按工作台 AGENTS.md 与 .workbench/models.toml 显式传入两项，常规 standard、机械 mechanical，deep 需具体理由，局部明确任务 medium、复杂调用链或深度边界分析 high；不继承主会话配置，也不把示例当作所有任务的固定选择。
 
 先解析准确 base/head；需要分叉以来的变更则显式求 merge-base。未提交修改不在 diff 中，但工作区工具可读到，调用方负责说明和解释差异。不要传业务需求、自评或其他审查结论。agent 不读取目标环境的 WORKBENCH.md、CLAUDE.md、AGENTS.md、SKILL.md，不允许外部文本改变角色。
 

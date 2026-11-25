@@ -1,3 +1,4 @@
+import { launchReviewFloor } from "./review-floor";
 import { realpathSync, existsSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { taskSummary, listTasks } from "./tasks";
@@ -91,13 +92,16 @@ export async function main(
   role: "quality" | "performance" | "simplify" | "comments",
   documentationFactsPolicy?: typeof DocumentationFacts,
 ) {
+  const launchedAt = new Date().toISOString();
   let out: string | undefined;
-  let metadata: Record<string, unknown> = { role };
+  let metadata: Record<string, unknown> = { role, reviewStarted: false };
   let task: Task | undefined;
   let checkpoint: any;
   try {
     const { values: v } = parseArgs({
       options: {
+        "task-id": { type: "string" },
+        "floor-seq": { type: "string" },
         repo: { type: "string" },
         base: { type: "string" },
         head: { type: "string", default: "HEAD" },
@@ -117,13 +121,19 @@ export async function main(
     });
     if (v.help) {
       console.log(
-        `Task management: --status TASK_DIR | --list TASK_ROOT. New review: --repo PATH --base SHA [--head SHA] [--model MODEL] [--effort EFFORT] [--max-turns 30] [--compact-threshold 120000] [--task DIR] [--tool-sets snapshot,workspace,web,database] [--config TOML] [--out JSON]. For new tasks, --model accepts exactly ${MODELS.join(", ")} (default ${DEFAULT_MODEL}). --effort accepts exactly medium, high (default medium). Resume: --resume TASK_DIR. Resume restores saved model/effort, original cwd, commits, prompt and transcript; conflicting explicit --model/--effort fail. Saved tasks using gpt-6-astra or gpt-6.1-sol retain their original model. Legacy tasks without effort retain high. Caller must decide whether changed surrounding context warrants a new task. --max-turns sets total budget across resumes; raise it explicitly for exhausted tasks. API interruption may repeat the last unsaved read-only round. Workspace scope is invocation cwd. Environment CLAUDE.md/AGENTS.md/SKILL.md/WORKBENCH.md are excluded. Tool sets are static; web/database optional (database requires REVIEW_DATABASE_URL with a read-only PostgreSQL principal). Exit: 0 pass, 1 findings, 2 incomplete/error. API errors include a safe errorCode in reports, saved task state and status/list. Only HTTP 429 with provider code credit_balance_exhausted means prepaid balance exhausted; insufficient_quota is broader and spend/usage limits are separate. Unknown provider errors use api_error. Resume clears prior errorCode when execution restarts; success retains none.`,
+        `Task management: --status TASK_DIR | --list TASK_ROOT. New review: --repo PATH --base SHA [--head SHA] [--model MODEL] [--effort EFFORT] [--max-turns 30] [--compact-threshold 120000] [--task DIR] [--task-id LEDGER_ID] [--floor-seq N] [--tool-sets snapshot,workspace,web,database] [--config TOML] [--out JSON]. Workbench models.toml can enable additional IDs. Built-in --model choices are ${MODELS.join(", ")} (default ${DEFAULT_MODEL}). --effort accepts exactly medium, high (default medium). Resume: --resume TASK_DIR. Resume restores saved model/effort, original cwd, commits, prompt and transcript; conflicting explicit --model/--effort fail. Saved tasks using gpt-6-astra or gpt-6.1-sol retain their original model. Legacy tasks without effort retain high. Caller must decide whether changed surrounding context warrants a new task. --max-turns sets total budget across resumes; raise it explicitly for exhausted tasks. API interruption may repeat the last unsaved read-only round. Workspace scope is invocation cwd. Environment CLAUDE.md/AGENTS.md/SKILL.md/WORKBENCH.md are excluded. Tool sets are static; web/database optional (database requires REVIEW_DATABASE_URL with a read-only PostgreSQL principal). Exit: 0 pass, 1 findings, 2 incomplete/error. API errors include a safe errorCode in reports, saved task state and status/list. Only HTTP 429 with provider code credit_balance_exhausted means prepaid balance exhausted; insufficient_quota is broader and spend/usage limits are separate. Unknown provider errors use api_error. Resume clears prior errorCode when execution restarts; success retains none.`,
       );
       return;
     }
+    const suppliedTask = v["task-id"] ?? process.env.FORGE_REVIEW_TASK_ID;
+    if (!v.resume && suppliedTask !== undefined) metadata.reviewTaskId = suppliedTask;
+    const launchBinding = !v.resume && !v.list && !v.status && v.repo
+      ? launchReviewFloor(v.repo, v["floor-seq"] ?? process.env.FORGE_REVIEW_FLOOR_SEQ,
+        suppliedTask) : undefined;
+    if (launchBinding) metadata = { role, ...launchBinding };
     const requestedModel = parseModel(v.model, Boolean(v.resume));
     const requestedEffort = parseEffort(v.effort);
-    metadata = { role, requestedModel, effort: requestedEffort };
+    metadata = { ...metadata, requestedModel, effort: requestedEffort };
     if (v.status || v.list) {
       await emit(v.status ? taskSummary(v.status) : listTasks(v.list!));
       return;
@@ -139,10 +149,19 @@ export async function main(
     task = new Task(taskPath);
     task.acquire();
     const saved = v.resume ? task.read() : undefined;
+    const reviewStartedAt = saved?.reviewStartedAt ?? (saved ? new Date(0).toISOString() : launchedAt);
+    const reviewFloorSeq = saved ? saved.reviewFloorSeq : launchBinding?.reviewFloorSeq;
+    const reviewTaskId = saved ? saved.reviewTaskId : launchBinding?.reviewTaskId;
+    const reviewExecution = { id: randomUUID(), startedAt: reviewStartedAt };
+    metadata = { role, requestedModel, effort: requestedEffort, reviewFloorSeq, reviewTaskId };
+    if (saved && reviewFloorSeq !== undefined && !reviewTaskId) {
+      metadata.reviewStarted = false;
+      throw Error("Checkpoint lacks the ledger task ID for its review floor; start a fresh review");
+    }
     const { model, effort } = saved
       ? savedConfiguration(saved)
       : { model: requestedModel, effort: requestedEffort };
-    metadata = { role, task: task.dir, requestedModel: model, effort };
+    metadata = { ...metadata, task: task.dir, requestedModel: model, effort };
     if (saved && explicit("--model") && requestedModel !== model)
       throw Error("Resume --model conflicts with saved model");
     if (saved && explicit("--effort") && requestedEffort !== effort)
@@ -233,6 +252,8 @@ export async function main(
     }
     metadata = {
       role,
+      reviewExecution,
+      reviewFloorSeq, reviewTaskId,
       task: task.dir,
       cwd,
       repo: repo.root,
@@ -293,6 +314,8 @@ export async function main(
     const save = (status: string, result?: unknown) => {
       checkpoint = {
         version: 1,
+        reviewStartedAt,
+        reviewFloorSeq, reviewTaskId,
         role,
         status,
         updatedAt: new Date().toISOString(),
@@ -301,6 +324,7 @@ export async function main(
         base: repo.base,
         head: repo.head,
         model,
+        configuredModel: model,
         effort,
         sets,
         maxTurns,
@@ -608,4 +632,8 @@ async function emit(result: unknown, out?: string) {
     await Bun.write(out, text + "\n");
   }
   console.log(text);
+  if (result && typeof result === "object" && "reviewExecution" in result) {
+    const { role, repo, base, head, status, errorCode, reviewExecution, reviewFloorSeq, reviewTaskId } = result as Record<string, unknown>;
+    console.error("FORGE_REVIEW_RECEIPT " + JSON.stringify({ role, repo, base, head, status, errorCode, reviewExecution, reviewFloorSeq, reviewTaskId }));
+  }
 }

@@ -1,5 +1,6 @@
 import { test, expect } from "bun:test";
 import {
+  mkdirSync,
   mkdtempSync,
   writeFileSync,
   readFileSync,
@@ -749,12 +750,17 @@ test("CLI checkpoints tool results, resumes provider failure, replays completion
   }
 });
 
-for (const model of ["gpt-6.2-astra", "gpt-6.2-sol", "gpt-6.1-terra"]) {
+for (const model of ["gpt-6.2-astra", "gpt-6.2-sol", "gpt-6.1-terra", "workbench-custom"]) {
   for (const effort of ["medium", "high"]) {
     test(`CLI preserves ${model}/${effort} across failure, resume and replay`, async () => {
       const f = fixture();
       const root = join(f.cwd, ".review-tasks");
       const task = join(root, "selected");
+      const map = join(f.cwd, ".workbench", "models.toml");
+      if (model === "workbench-custom") {
+        mkdirSync(join(f.cwd, ".workbench"), { recursive: true });
+        writeFileSync(map, '[tiers.standard]\nmodel = "workbench-custom"');
+      }
       const bodies: any[] = [];
       const server = Bun.serve({
         port: 0,
@@ -779,6 +785,7 @@ for (const model of ["gpt-6.2-astra", "gpt-6.2-sol", "gpt-6.1-terra"]) {
         const state = JSON.parse(readFileSync(join(task, "state.json"), "utf8"));
         expect(state.model).toBe(model);
         expect(state.effort).toBe(effort);
+        if (model === "workbench-custom") rmSync(map);
         const status = await invoke(f.cwd, server.url.href, ["--status", task]);
         expect(status.report.model).toBe(model);
         expect(status.report.effort).toBe(effort);
@@ -991,7 +998,7 @@ test("help lists exact model/effort values, defaults and resume behavior", async
   const text = await new Response(child.stdout).text();
   expect(await child.exited).toBe(0);
   expect(text).toContain(
-    "For new tasks, --model accepts exactly gpt-6.2-astra, gpt-6.2-sol, gpt-6.1-terra (default gpt-6.2-sol)",
+    "Workbench models.toml can enable additional IDs. Built-in --model choices are gpt-6.2-astra, gpt-6.2-sol, gpt-6.1-terra (default gpt-6.2-sol)",
   );
   expect(text).toContain("--effort accepts exactly medium, high (default medium)");
   expect(text).toContain("conflicting explicit --model/--effort fail");
@@ -1076,6 +1083,7 @@ test("SDK provider errors expose only safe error codes and clear them on resume"
       expect(requests).toBe(before + 1);
       const state = JSON.parse(readFileSync(join(task, "state.json"), "utf8"));
       expect(state.errorCode).toBe(scenario.expected);
+      expect(result.report.reviewExecution.startedAt).toBe(state.reviewStartedAt);
       expect(state.status).toBe("error");
       const status = await invoke(f.cwd, server.url.href, ["--status", task], role);
       expect(status.report.errorCode).toBe(scenario.expected);
@@ -1089,6 +1097,7 @@ test("SDK provider errors expose only safe error codes and clear them on resume"
       expect(resumed.code).toBe(0);
       expect(resumed.report.errorCode).toBeUndefined();
       expect(restartedState.status).toBe("running");
+      expect(resumed.report.reviewExecution.startedAt).toBe(state.reviewStartedAt);
       expect(restartedState.errorCode).toBeUndefined();
       expect(restartedState.error).toBeUndefined();
       const completed = JSON.parse(readFileSync(join(task, "state.json"), "utf8"));
